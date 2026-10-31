@@ -1,0 +1,167 @@
+.section {
+  background: var(--color-bg);
+  padding: 112px 0 100px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 36px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  min-height: 204px;
+  padding: 20px 20px 28px;
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 47px;
+  height: 47px;
+  border-radius: 50%;
+  border: 1px solid var(--color-gold);
+  background: var(--color-card);
+  color: var(--color-olive);
+}
+
+.icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.cardTitle {
+  margin-top: 18px;
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--color-text);
+}
+
+.cardBody {
+  margin-top: 14px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--color-text-sub);
+}
+
+.closing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 46px;
+  text-align: center;
+}
+
+.wave {
+  width: 194px;
+  height: 12px;
+  fill: none;
+  stroke: var(--color-gold);
+  stroke-width: 1.4;
+}
+
+.closingText {
+  margin-top: 28px;
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* 태블릿·데스크톱: 반투명 유리 카드 */
+@media (min-width: 768px) {
+  .card {
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    background: linear-gradient(
+      145deg,
+      rgba(250, 238, 236, 0.72) 0%,
+      rgba(245, 234, 232, 0.42) 100%
+    );
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    backdrop-filter: blur(16px) saturate(140%);
+    box-shadow:
+      0 10px 30px rgba(217, 143, 138, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.85),
+      inset 0 -1px 0 rgba(217, 143, 138, 0.08);
+    transition:
+      box-shadow 0.3s ease,
+      translate 0.3s ease;
+  }
+
+  /* 호버: 그림자가 깊어지며 살짝 떠오른다 */
+  .card:hover {
+    translate: 0 -4px;
+    box-shadow:
+      9px 8px 30px rgba(217, 143, 138, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      inset 0 -1px 0 rgba(217, 143, 138, 0.08);
+  }
+
+  /* 아이콘: 배경·테두리 없이 */
+  .icon {
+    border: 0;
+    background: none;
+  }
+
+  .icon svg {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .section {
+    padding: 127px 0 119px;
+  }
+
+  .cards {
+    gap: 45px;
+    margin-top: 44px;
+  }
+
+  .card {
+    min-height: 26px;
+    padding: 32px 32px 30px;
+    border-radius: var(--radius-card);
+  }
+
+  .icon {
+    justify-content: flex-start;
+    width: auto;
+    height: 32px;
+    border-radius: 0;
+  }
+
+  .cardTitle {
+    margin-top: 19px;
+    font-size: 18px;
+  }
+
+  .cardBody {
+    margin-top: 13px;
+    font-size: 14.5px;
+    line-height: 1.67;
+  }
+
+  .closing {
+    margin-top: 56px;
+  }
+
+  .wave {
+    width: 194px;
+  }
+
+  .closingText {
+    margin-top: 34px;
+    font-size: 21px;
+  }
+}

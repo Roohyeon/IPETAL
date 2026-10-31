@@ -1,0 +1,75 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: var(--radius-pill);
+  border: 1.5px dashed #7a807d;
+  background: transparent;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.md {
+  height: 44px;
+  padding: 0 24px;
+  font-size: 17px;
+}
+
+.sm {
+  height: 36px;
+  padding: 0 16px;
+  font-size: 14px;
+}
+
+button.chip:hover:not([aria-disabled="true"]) {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+button.chip[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.icon {
+  flex: none;
+}
+
+.editing {
+  background: var(--color-white);
+}
+
+.input {
+  width: 8.5em;
+  border: 0;
+  background: transparent;
+  outline: none;
+}
+
+@media (min-width: 768px) {
+  .md {
+    height: 44px;
+    padding: 0 18px;
+    font-size: 15px;
+  }
+
+  .sm {
+    height: 32px;
+    padding: 0 14px;
+    font-size: 13px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .md {
+    height: 44px;
+    padding: 0 20px;
+    font-size: 15px;
+  }
+
+  .sm {
+    height: 30px;
+    padding: 0 14px;
+    font-size: 13px;
+  }
+}

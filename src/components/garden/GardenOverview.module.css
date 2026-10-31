@@ -1,0 +1,200 @@
+.board {
+  position: relative;
+  padding: 24px 0 40px;
+  border-radius: var(--radius-main);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  background: rgba(253, 252, 251, 0.78);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-main);
+}
+
+/* 제목 카드 (안쪽 유리) */
+.intro {
+  margin: 0 16px;
+  padding: 24px 22px 22px;
+  border-radius: var(--radius-card);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(253, 248, 247, 0.6));
+  box-shadow: 0 6px 20px rgba(169, 112, 107, 0.06);
+}
+
+.eyebrow {
+  font-family: var(--font-carlito), sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--color-text-sub);
+}
+
+.title {
+  margin-top: 4px;
+  font-family: var(--font-serif);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.summary {
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  row-gap: 18px;
+  margin-top: 30px;
+}
+
+.month {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  color: var(--color-text-sub);
+}
+
+.pond {
+  position: relative;
+  display: block;
+  width: 84%;
+  aspect-ratio: 240 / 160;
+}
+
+.pad {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.petal {
+  position: absolute;
+  left: 44%;
+  top: 14%;
+  width: 18%;
+  transform-origin: 50% 90%;
+}
+
+.petal svg {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 4px 6px rgba(169, 112, 107, 0.18));
+}
+
+/* 3D 연꽃 캔버스 (꽃 둘레로 여백이 있어 연잎보다 넓다) */
+.lotus {
+  position: absolute;
+  left: 50%;
+  bottom: -2%;
+  width: 112%;
+  aspect-ratio: 5 / 4;
+  translate: -50% 0;
+}
+
+.label {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.bloomed {
+  color: var(--color-text);
+  border-radius: var(--radius-card);
+}
+
+.bloomed .label {
+  font-size: 16px;
+}
+
+.bloomed .lotus {
+  transition: translate 0.3s ease;
+}
+
+.bloomed:hover .lotus {
+  translate: -50% -4px;
+}
+
+.bloomed:focus-visible {
+  outline: 2px solid var(--color-olive);
+  outline-offset: 4px;
+}
+
+.hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 30px;
+  padding: 0 20px;
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+@media (min-width: 768px) {
+  .board {
+    padding: 40px 0 48px;
+  }
+
+  .intro {
+    max-width: 420px;
+    margin: 0 32px;
+    padding: 28px 32px 26px;
+  }
+
+  .title {
+    font-size: 36px;
+  }
+
+  .summary {
+    font-size: 15px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    row-gap: 26px;
+    margin-top: 40px;
+    padding: 0 8px;
+  }
+
+  .hint {
+    margin-top: 40px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .board {
+    padding: 56px 0 60px;
+  }
+
+  .intro {
+    max-width: 420px;
+    margin: 0 52px;
+    padding: 32px 34px 30px;
+  }
+
+  .title {
+    font-size: 44px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    row-gap: 44px;
+    margin-top: 64px;
+    padding: 0;
+  }
+
+  .label {
+    font-size: 16px;
+  }
+
+  .bloomed .label {
+    font-size: 17px;
+  }
+
+  .hint {
+    margin-top: 48px;
+    font-size: 15px;
+  }
+}

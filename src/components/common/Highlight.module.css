@@ -1,0 +1,17 @@
+.highlight {
+  color: var(--color-text);
+  font-weight: 700;
+  background-image: linear-gradient(var(--color-gold), var(--color-gold));
+  background-repeat: no-repeat;
+  background-size: 100% 2px;
+  background-position: 0 100%;
+  padding-bottom: 2px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+@media (min-width: 1200px) {
+  .highlight {
+    padding-bottom: 5px;
+  }
+}

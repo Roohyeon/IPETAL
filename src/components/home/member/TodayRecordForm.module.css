@@ -1,0 +1,345 @@
+.form {
+  margin-top: 28px;
+}
+
+.block {
+  border: 0;
+  min-width: 0;
+}
+
+.qHead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 12px;
+}
+
+.qLabel {
+  grid-column: 1 / -1;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-sub);
+}
+
+.qTitle {
+  margin-top: 4px;
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.32;
+}
+
+.qHead .qTitle {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.helper {
+  grid-column: 1 / -1;
+  margin-top: 16px;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--color-text-sub);
+}
+
+.counter {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: start;
+  padding-top: 8px;
+  font-size: 13px;
+  color: var(--color-text-sub);
+  white-space: nowrap;
+}
+
+.counter strong {
+  font-size: 20px;
+  color: var(--color-text);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 8px;
+  margin-top: 22px;
+}
+
+.hint {
+  margin-top: 20px;
+  font-size: 13px;
+  color: var(--color-text-sub);
+}
+
+.divider {
+  margin: 28px 0 30px;
+  border: 0;
+  border-top: 1px solid #e6e1de;
+}
+
+.moods {
+  margin-top: 22px;
+}
+
+.moodHint {
+  display: none;
+}
+
+/* 한 줄 메모 */
+.memo {
+  margin-top: 30px;
+}
+
+.memoHead {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.memoTitle {
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.optional {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 11px;
+  border-radius: var(--radius-pill);
+  border: 1px solid #ddd8d5;
+  background: var(--color-card);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-sub);
+}
+
+.memoLabel {
+  display: block;
+  margin-top: 16px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.memoInput {
+  width: 100%;
+  height: 54px;
+  margin-top: 12px;
+  padding: 0 16px;
+  border-radius: 18px;
+  border: 1px solid #e3dedb;
+  background: var(--color-card);
+  font-size: 15px;
+  outline: none;
+}
+
+.memoInput::placeholder {
+  color: #8a918e;
+}
+
+.memoInput:focus-visible {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(94, 116, 109, 0.15);
+}
+
+.memoFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 18px;
+}
+
+.memoClose {
+  font-weight: 400;
+  font-size: 13px;
+  color: var(--color-text-sub);
+}
+
+.memoCount {
+  font-size: 12px;
+  color: var(--color-text-sub);
+}
+
+/* 저장 */
+.submit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 32px;
+  text-align: center;
+}
+
+.status {
+  font-size: 15px;
+  color: var(--color-text-sub);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  width: 100%;
+  margin-top: 14px;
+}
+
+.saveButton {
+  width: 100%;
+  height: 56px;
+  font-size: 18px;
+}
+
+.memoOpen {
+  font-size: 16px;
+}
+
+@media (min-width: 768px) {
+  .form {
+    margin-top: 40px;
+  }
+
+  .qTitle {
+    font-size: 28px;
+    margin-top: 10px;
+  }
+
+  .helper {
+    grid-column: 1;
+    margin-top: 6px;
+    font-size: 15px;
+  }
+
+  .counter {
+    grid-row: 3;
+    align-self: end;
+    padding: 0;
+    font-size: 12px;
+  }
+
+  .counter strong {
+    font-size: 17px;
+  }
+
+  .chips {
+    gap: 14px 10px;
+    margin-top: 28px;
+  }
+
+  .hint {
+    margin-top: 24px;
+  }
+
+  .divider {
+    margin: 41px 0 39px;
+  }
+
+  .moods {
+    margin-top: 20px;
+  }
+
+  .memoHead {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .submit {
+    margin-top: 42px;
+  }
+
+  .status {
+    font-size: 15px;
+  }
+
+  .actions {
+    margin-top: 22px;
+    gap: 26px;
+  }
+
+  .saveButton {
+    height: 56px;
+    font-size: 17px;
+  }
+
+  .memoOpen {
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .form {
+    margin-top: 42px;
+  }
+
+  .qLabel {
+    font-size: 12px;
+  }
+
+  .qTitle {
+    margin-top: 6px;
+    font-size: 28px;
+  }
+
+  .helper {
+    margin-top: 4px;
+    font-size: 15px;
+  }
+
+  .counter {
+    font-size: 13px;
+  }
+
+  .counter strong {
+    font-size: 20px;
+  }
+
+  .chips {
+    gap: 10px 9px;
+    margin-top: 22px;
+  }
+
+  .hint {
+    margin-top: 22px;
+  }
+
+  .divider {
+    margin: 50px 0 40px;
+  }
+
+  .moods {
+    margin-top: 22px;
+  }
+
+  .moodHint {
+    display: block;
+  }
+
+  .memo {
+    max-width: 640px;
+    margin-top: 44px;
+  }
+
+  .submit {
+    align-items: flex-start;
+    margin-top: 52px;
+    text-align: left;
+  }
+
+  .actions {
+    flex-direction: row;
+    gap: 37px;
+    width: auto;
+    margin-top: 16px;
+  }
+
+  .saveButton {
+    width: 212px;
+    height: 59px;
+    font-size: 18px;
+    font-weight: 400;
+  }
+
+  .memoOpen {
+    font-size: 15px;
+  }
+}

@@ -1,0 +1,120 @@
+.page {
+  position: relative;
+  min-height: 100dvh;
+  overflow-x: clip;
+  background: var(--color-member-bg);
+  padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+}
+
+/* 흐릿한 연꽃·연잎 배경 장식 */
+.decor {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.decor img {
+  position: absolute;
+  height: auto;
+  filter: blur(14px);
+}
+
+.d1 {
+  left: -70px;
+  top: 90px;
+  width: 200px;
+  opacity: 0.35;
+}
+
+.d2 {
+  left: -90px;
+  top: 150px;
+  width: 220px;
+  opacity: 0.18;
+}
+
+.d3 {
+  right: -60px;
+  top: 560px;
+  width: 170px;
+  opacity: 0.3;
+}
+
+.d4 {
+  right: -80px;
+  top: 640px;
+  width: 230px;
+  opacity: 0.16;
+}
+
+.d5 {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .decor img {
+    filter: blur(18px);
+  }
+
+  .d1 {
+    left: -60px;
+    top: 60px;
+    width: 260px;
+  }
+
+  .d3 {
+    right: -40px;
+    top: 420px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .page {
+    padding-bottom: 0;
+  }
+
+  .d1 {
+    left: 20px;
+    top: 280px;
+    width: 230px;
+    opacity: 0.32;
+  }
+
+  .d2 {
+    left: 40px;
+    top: 360px;
+    width: 230px;
+    opacity: 0.16;
+  }
+
+  .d3 {
+    right: 60px;
+    top: 820px;
+    width: 220px;
+  }
+
+  .d4 {
+    right: 10px;
+    top: 900px;
+    width: 260px;
+  }
+
+  .d5 {
+    display: block;
+    left: 50%;
+    bottom: 140px;
+    width: 230px;
+    opacity: 0.14;
+  }
+}
+
+.desktopOnly {
+  display: none;
+}
+
+@media (min-width: 1200px) {
+  .desktopOnly {
+    display: block;
+  }
+}

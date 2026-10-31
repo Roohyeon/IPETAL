@@ -1,0 +1,47 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  color: var(--color-text);
+}
+
+.mark {
+  width: auto;
+  height: 32px;
+}
+
+.word {
+  font-family: var(--font-sans);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  line-height: 1;
+}
+
+@media (min-width: 768px) {
+  .logo {
+    gap: 12px;
+  }
+
+  .mark {
+    height: 30px;
+  }
+
+  .word {
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .logo {
+    gap: 10px;
+  }
+
+  .mark {
+    height: 34px;
+  }
+
+  .word {
+    font-size: 18px;
+  }
+}

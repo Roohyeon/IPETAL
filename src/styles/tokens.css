@@ -1,0 +1,87 @@
+/*
+ * IPETAL design tokens
+ * 값의 출처: 디자인시안/*.png 픽셀 추출값 (1순위). 프롬프트 참고값과 다른 항목은 주석으로 표시.
+ */
+:root {
+  /* surface */
+  --color-bg: #fdfbfa;
+  --color-surface: #f5eae8;
+  --color-surface-alt: #f6f6f4; /* How it works 섹션 배경 */
+  --color-cta-bg: #fcefee; /* 마지막 CTA 섹션 배경 */
+  --color-member-bg: #fcf9f8; /* 로그인 후 페이지 배경 */
+  --color-member-footer: #f6f6f5;
+  --color-card: #fdfbfa;
+  --color-white: #ffffff;
+
+  /* text */
+  --color-text: #2f3a36;
+  --color-text-sub: #5f6a66;
+  --color-text-on-primary: #ffffff;
+
+  /* brand */
+  --color-primary: #5e746d;
+  --color-primary-hover: #4e625c;
+  --color-olive: #8a9a5b; /* 선택된 키워드 칩 · 활성 저장 버튼 (참고값 #85A889와 다름) */
+  --color-olive-hover: #79894c;
+  --color-gold: #c4a46b;
+  --color-petal-border: #a9706b;
+  --color-wordmark: #d98f8a;
+  --color-begin: #a9706b; /* "Begin your garden" */
+
+  /* 하루 느낌 5단계 (꽃잎 명도) */
+  --mood-best: #d98f8a;
+  --mood-good: #e4aeaa;
+  --mood-okay: #ecc5c3;
+  --mood-tired: #f2d9d8;
+  --mood-hard: #f8eceb;
+  --petal-fade: #fbf1f0; /* 꽃잎 그라데이션 아래쪽 */
+
+  /* lines */
+  --color-line: #eeebe9; /* 헤더 하단선 */
+  --color-border: #e8e2df;
+  --color-border-strong: #d9d2ce;
+  --color-dashed: #7e8f88;
+  --color-disabled-bg: #e5e1df;
+  --color-bar: #e4b5b2;
+
+  /* radius */
+  --radius-pill: 999px;
+  --radius-card: 20px;
+  --radius-panel: 24px;
+  --radius-main: 28px;
+
+  /* shadow (옅은 핑크빛) */
+  --shadow-card: 0 10px 30px rgba(217, 143, 138, 0.1);
+  --shadow-soft: 0 4px 16px rgba(169, 112, 107, 0.08);
+  --shadow-main: 0 24px 60px rgba(217, 143, 138, 0.12);
+
+  /* layout */
+  --container: 1190px;
+  --gutter: 16px;
+  --header-h: 57px;
+  --tabbar-h: 63px;
+
+  /* fonts: next/font 변수. 영문은 Carlito, 한글 본문은 Noto Sans KR */
+  --font-sans:
+    var(--font-carlito), var(--font-noto-kr), "Noto Sans KR", "Apple SD Gothic Neo",
+    "Malgun Gothic", sans-serif;
+  --font-serif: var(--font-caladea), var(--font-gowun), "Batang", serif;
+  --font-display: var(--font-zcool), var(--font-caladea), serif;
+
+  /* 선택 강조색 (하루 느낌 선택 등) */
+  --accent-select: var(--color-olive);
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gutter: 32px;
+    --header-h: 65px;
+  }
+}
+
+@media (min-width: 1200px) {
+  :root {
+    --gutter: 24px;
+    --header-h: 72px;
+  }
+}

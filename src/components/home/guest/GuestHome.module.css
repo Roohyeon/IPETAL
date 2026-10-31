@@ -1,0 +1,54 @@
+.page {
+  min-height: 100dvh;
+  padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+}
+
+.main {
+  outline: none;
+}
+
+.skip {
+  position: absolute;
+  left: 12px;
+  top: -60px;
+  z-index: 100;
+  padding: 10px 16px;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 700;
+}
+
+.skip:focus {
+  top: 12px;
+}
+
+/* 모바일은 Hero 한 화면에서 바로 시작하기 */
+.sections {
+  display: none;
+}
+
+.footer {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .page {
+    /* 태블릿 하단 탭 높이 (MobileTabBar .tablet) */
+    padding-bottom: calc(68px + env(safe-area-inset-bottom));
+  }
+
+  .sections {
+    display: block;
+  }
+}
+
+@media (min-width: 1200px) {
+  .page {
+    padding-bottom: 0;
+  }
+
+  .footer {
+    display: block;
+  }
+}

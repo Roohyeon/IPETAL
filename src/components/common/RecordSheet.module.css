@@ -1,0 +1,119 @@
+:global(html:has(dialog[open])) {
+  overflow: hidden;
+}
+
+.sheet {
+  position: fixed;
+  inset: auto 0 0;
+  width: 100%;
+  max-width: 760px;
+  max-height: calc(100dvh - 48px);
+  margin: 0 auto;
+  padding: 0;
+  border: 0;
+  border-radius: 28px 28px 0 0;
+  background: var(--color-card);
+  color: var(--color-text);
+  box-shadow: 0 -12px 40px rgba(47, 58, 54, 0.14);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.sheet::backdrop {
+  background: rgba(40, 44, 42, 0.42);
+}
+
+/* 아래에서 위로 서서히 */
+@media (prefers-reduced-motion: no-preference) {
+  .sheet[open] {
+    animation: rise 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .sheet[open]::backdrop {
+    animation: fade 0.45s ease;
+  }
+
+  .sheet[data-closing] {
+    animation: sink 0.28s cubic-bezier(0.4, 0, 1, 1) forwards;
+  }
+
+  .sheet[data-closing]::backdrop {
+    animation: fade 0.28s ease reverse forwards;
+  }
+}
+
+@keyframes rise {
+  from {
+    translate: 0 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes sink {
+  to {
+    translate: 0 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+.body {
+  padding: 10px 36px calc(36px + env(safe-area-inset-bottom));
+}
+
+.grabber {
+  display: block;
+  width: 36px;
+  height: 4px;
+  margin: 0 auto 14px;
+  border-radius: 2px;
+  background: #ddd6d3;
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.date {
+  font-size: 14px;
+  color: var(--color-text-sub);
+}
+
+.title {
+  margin-top: 2px;
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.close {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+@media (min-width: 768px) {
+  .body {
+    padding: 14px 64px calc(44px + env(safe-area-inset-bottom));
+  }
+
+  .title {
+    font-size: 28px;
+  }
+}

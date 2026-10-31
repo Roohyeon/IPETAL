@@ -1,0 +1,312 @@
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.title {
+  margin-top: 26px;
+  font-family: var(--font-serif);
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.count {
+  margin-top: 4px;
+  font-size: 15px;
+  color: var(--color-text-sub);
+}
+
+.card {
+  margin-top: 24px;
+  padding: 18px 16px 22px;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.monthTitle {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 44px;
+  height: 44px;
+  padding: 0 10px;
+  border-radius: 14px;
+  border: 1px solid var(--color-border);
+  background: var(--color-card);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.navDisabled {
+  border-color: transparent;
+  background: var(--color-surface);
+  color: #e3c4c1;
+}
+
+/* 모바일은 화살표만 */
+.navText {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.todayLink {
+  margin-left: auto;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.weekdays,
+.days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.weekdays {
+  margin-top: 18px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+.days {
+  margin-top: 10px;
+}
+
+.day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  aspect-ratio: 1 / 1.1;
+  padding-top: 7px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--color-text);
+}
+
+.num {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.recorded {
+  transition:
+    border-color 0.18s ease,
+    translate 0.18s ease;
+}
+
+.recorded:hover {
+  border-color: var(--color-border-strong);
+  translate: 0 -2px;
+}
+
+.empty {
+  border-style: dashed;
+  border-color: #e7d9d6;
+  background: transparent;
+}
+
+.future {
+  border-color: #f5e8e7;
+  background: rgba(255, 255, 255, 0.35);
+  color: #ecc5c3;
+}
+
+.today {
+  border: 2px solid var(--color-text);
+  background: var(--color-white);
+}
+
+.plus {
+  flex: none;
+}
+
+/* "오늘" 글씨는 태블릿부터 */
+.todayText {
+  display: none;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* 하루 느낌: 모바일은 점, 태블릿부터 얼굴 */
+.face {
+  display: none;
+  flex: none;
+}
+
+.dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid var(--color-petal-border);
+}
+
+.best {
+  background: var(--mood-best);
+}
+
+.good {
+  background: var(--mood-good);
+}
+
+.okay {
+  background: var(--mood-okay);
+}
+
+.tired {
+  background: var(--mood-tired);
+}
+
+.hard {
+  background: var(--mood-hard);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 18px;
+  font-size: 13px;
+  color: var(--color-text-sub);
+}
+
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dashed {
+  width: 14px;
+  height: 14px;
+  border: 1px dashed var(--color-text-sub);
+  border-radius: 3px;
+}
+
+.hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--color-text-sub);
+}
+
+@media (min-width: 768px) {
+  .title {
+    margin-top: 34px;
+    font-size: 40px;
+  }
+
+  .card {
+    margin-top: 28px;
+    padding: 24px 24px 28px;
+  }
+
+  .toolbar {
+    gap: 28px;
+  }
+
+  .monthTitle {
+    font-size: 24px;
+  }
+
+  .nav {
+    padding: 0 16px;
+  }
+
+  .navText {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+  }
+
+  .weekdays,
+  .days {
+    gap: 9px;
+  }
+
+  .weekdays {
+    font-size: 15px;
+  }
+
+  .day {
+    aspect-ratio: 1 / 0.92;
+    padding-top: 12px;
+    gap: 8px;
+    border-radius: 14px;
+  }
+
+  .num {
+    font-size: 15px;
+  }
+
+  .face {
+    display: block;
+  }
+
+  .dot {
+    display: none;
+  }
+
+  .todayText {
+    display: block;
+  }
+
+  .legend {
+    gap: 10px 22px;
+    margin-top: 22px;
+    font-size: 14px;
+  }
+
+  .hint {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .title {
+    font-size: 44px;
+  }
+
+  .card {
+    padding: 28px 28px 32px;
+  }
+
+  .day {
+    aspect-ratio: auto;
+    height: 98px;
+  }
+}

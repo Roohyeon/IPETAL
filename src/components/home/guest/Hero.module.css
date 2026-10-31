@@ -1,0 +1,375 @@
+.hero {
+  --hero-h: calc(100svh - var(--header-h) - var(--tabbar-h) - env(safe-area-inset-bottom));
+  --sequence-scroll: 0px;
+  position: relative;
+}
+
+.track {
+  position: relative;
+  height: calc(var(--hero-h) + var(--sequence-scroll));
+}
+
+.stage {
+  position: sticky;
+  top: var(--header-h);
+  height: var(--hero-h);
+  min-height: 560px;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.bgWrap {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+.bg {
+  object-fit: cover;
+  object-position: 50% 50%;
+}
+
+/* 꽃 영역 중심 (모바일 / 태블릿 / 데스크톱) */
+.hero {
+  --flower-top: 43%;
+  --bud-w: 150px;
+  --lotus-w: 300px;
+  --scene-w: 420px;
+  --scene-h: 350px;
+}
+
+/* 봉오리·연꽃 정적 이미지: 3D 로딩 전·WebGL 미지원 대체 */
+.fallback {
+  transition: opacity 0.6s ease;
+}
+
+.fallbackHidden {
+  opacity: 0;
+}
+
+/* 3D를 쓸 수 있으면 이미지를 보이지 않는다 (WebGL 미지원일 때만 대체 이미지) */
+.fallback:not(.fallbackOn) {
+  display: none;
+}
+
+.flower {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: var(--flower-top);
+  translate: -50% -50%;
+  pointer-events: none;
+}
+
+.flower img {
+  width: 100%;
+  height: auto;
+}
+
+.bud {
+  width: var(--bud-w);
+}
+
+.lotus {
+  width: var(--lotus-w);
+}
+
+/* 3D 연꽃: 크기를 미리 고정, 준비되면 이미지와 교차 페이드 */
+.scene {
+  position: absolute;
+  left: 50%;
+  top: var(--flower-top);
+  width: var(--scene-w);
+  height: var(--scene-h);
+  translate: -50% -50%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+
+.sceneReady {
+  opacity: 1;
+}
+
+.sceneInner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* 활짝 핀 연꽃 뒤로 비치는 햇살 */
+.sunGlow {
+  position: absolute;
+  inset: -12%;
+  background: radial-gradient(
+    closest-side at 50% 46%,
+    rgba(255, 252, 244, 0.95),
+    rgba(255, 241, 226, 0.6) 42%,
+    rgba(255, 236, 228, 0) 100%
+  );
+  pointer-events: none;
+}
+
+.content {
+  position: absolute;
+  inset: 0 0 96px;
+  /* 빈 영역은 아래 3D 연꽃으로 클릭·드래그가 통과하도록 */
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  text-align: center;
+}
+
+.wordmark,
+.copy {
+  pointer-events: auto;
+}
+
+/* 3D 연꽃을 돌릴 수 있는 동안에는 (아직 보이지 않는) 글자 층이 클릭을 가로채지 않게 */
+.hero[data-flower-interactive] .wordmark,
+.hero[data-flower-interactive] .copy {
+  pointer-events: none;
+}
+
+.wordmark {
+  font-family: var(--font-display);
+  font-size: 64px;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: var(--color-wordmark);
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tagline {
+  margin-top: 22px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--color-text);
+}
+
+.title {
+  margin-top: 14px;
+  font-family: var(--font-serif);
+  /* 440px(iPhone 16 Pro Max)에서 38px, 화면 폭에 비례 */
+  font-size: clamp(28px, 8.64vw, 38px);
+  font-weight: 700;
+  line-height: 1.38;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+}
+
+.body {
+  margin-top: 18px;
+  max-width: 335px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--color-text);
+}
+
+.scrollCue {
+  display: none;
+}
+
+.mobileCta {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 29px;
+}
+
+/* ---------- tablet ---------- */
+/* 유리 헤더 아래까지 채우고, 시안의 680px 구도는 헤더 바로 아래부터 */
+@media (min-width: 768px) {
+  .hero {
+    --frame-top: var(--header-h);
+    --hero-h: calc(680px + var(--header-h));
+    --flower-top: calc(var(--frame-top) + 374px);
+    --bud-w: 215px;
+    --lotus-w: 440px;
+    --scene-w: 560px;
+    --scene-h: 460px;
+    margin-top: calc(var(--header-h) * -1);
+  }
+
+  .stage {
+    top: 0;
+    min-height: 0;
+  }
+
+  .content {
+    inset: 0;
+    justify-content: flex-start;
+    padding: calc(var(--frame-top) + 176px) 32px 0;
+  }
+
+  .wordmark {
+    font-size: 97px;
+  }
+
+  .tagline {
+    margin-top: 16px;
+    font-size: 13px;
+  }
+
+  .title {
+    margin-top: 12px;
+    font-size: 44px;
+    line-height: 1.22;
+  }
+
+  .body {
+    margin-top: 16px;
+    max-width: 540px;
+    font-size: 15px;
+    line-height: 1.8;
+  }
+
+  .scrollCue {
+    position: absolute;
+    left: calc(50% - 15px);
+    bottom: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    color: #fff;
+  }
+
+  .mobileCta {
+    display: none;
+  }
+}
+
+/* ---------- desktop ---------- */
+/* 화면을 꽉 채우고 (유리 헤더 아래까지), 시안의 754px 구도는 헤더 아래 남은 영역 가운데에 둔다 */
+@media (min-width: 1200px) {
+  .hero {
+    --hero-h: 100svh;
+    --frame-top: max(
+      var(--header-h),
+      calc(var(--header-h) + (100svh - var(--header-h) - 754px) / 2)
+    );
+    --flower-top: calc(var(--frame-top) + 418px);
+    --bud-w: 239px;
+    --lotus-w: 488px;
+    --scene-w: 800px;
+    --scene-h: 640px;
+  }
+
+  .stage {
+    min-height: 680px;
+  }
+
+  .content {
+    padding-top: calc(var(--frame-top) + 191px);
+  }
+
+  .wordmark {
+    font-size: 126px;
+  }
+
+  .tagline {
+    margin-top: 16px;
+    font-size: 13px;
+  }
+
+  .title {
+    margin-top: 10px;
+    font-size: 54px;
+    line-height: 1.24;
+  }
+
+  .body {
+    margin-top: 12px;
+    max-width: 590px;
+    font-size: 17px;
+    line-height: 1.74;
+  }
+
+  .scrollCue {
+    bottom: 54px;
+  }
+}
+
+/* 데스크톱 스크롤 연출 길이 */
+@media (min-width: 1200px) and (prefers-reduced-motion: no-preference) {
+  .hero {
+    --sequence-scroll: 1400px;
+  }
+}
+
+/* 연출 첫 장면(봉오리)을 JS가 오기 전부터 CSS로 맞춰 둔다 — 모든 화면 */
+@media (prefers-reduced-motion: no-preference) {
+  .flower {
+    display: block;
+  }
+
+  .lotus,
+  .wordmark,
+  .tagline,
+  .title,
+  .body,
+  .scrollCue,
+  .mobileCta {
+    opacity: 0;
+  }
+}
+
+/* ---------- 공통: 배경 물결 ---------- */
+.rippleDefs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bgWrap {
+    inset: -32px;
+    filter: url(#hero-ripple);
+  }
+}
+
+/* ---------- 모바일: 시작하기 버튼 둥둥 ---------- */
+@media (max-width: 767px) and (prefers-reduced-motion: no-preference) {
+  .float {
+    animation: bob 3.2s ease-in-out infinite;
+  }
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -8px;
+  }
+}
+
+/* 스크롤 화살표 위아래 움직임 */
+@media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+  .scrollCue {
+    animation: cueBob 1.8s ease-in-out infinite;
+  }
+}
+
+@keyframes cueBob {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 8px;
+  }
+}

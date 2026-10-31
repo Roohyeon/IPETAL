@@ -1,0 +1,104 @@
+.section {
+  background: var(--color-bg);
+  padding: 72px 0 96px;
+}
+
+.list {
+  margin: 34px auto 0;
+  border-top: 1px solid #e3dfdc;
+}
+
+.item {
+  border-bottom: 1px solid #e3dfdc;
+}
+
+.heading {
+  font: inherit;
+}
+
+.question {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  min-height: 60px;
+  padding: 0 4px;
+  text-align: left;
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.icon {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--color-gold);
+  color: var(--color-primary);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.iconOpen {
+  border-color: transparent;
+  background: var(--color-olive);
+  color: #fff;
+}
+
+.question:hover .icon:not(.iconOpen) {
+  background: var(--color-surface);
+}
+
+.answer {
+  padding: 0 4px 24px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--color-text-sub);
+}
+
+@media (min-width: 768px) {
+  .question {
+    min-height: 61px;
+    font-size: 17px;
+  }
+
+  .icon {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .section {
+    padding: 100px 0 119px;
+  }
+
+  /* PC: 제목 왼쪽 정렬, 질문 폭 1200px */
+  .headingWrap > div {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .list {
+    width: 100%;
+    max-width: 1200px;
+    margin-top: 34px;
+  }
+
+  .question {
+    min-height: 64px;
+    font-size: 17px;
+  }
+
+  .answer {
+    padding: 2px 4px 24px;
+    font-size: 15px;
+  }
+}

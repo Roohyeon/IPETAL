@@ -1,0 +1,123 @@
+.footer {
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-line);
+}
+
+.inner {
+  max-width: calc(var(--container) + var(--gutter) * 2);
+  margin: 0 auto;
+  padding: 40px var(--gutter) 44px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+}
+
+.logo {
+  gap: 10px;
+}
+
+.tagline {
+  font-size: 14px;
+  color: var(--color-text-sub);
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin-top: 22px;
+  font-size: 13.5px;
+  color: var(--color-text-sub);
+}
+
+.links a:hover {
+  color: var(--color-text);
+}
+
+.strong {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.copy {
+  margin-top: 22px;
+  font-size: 12px;
+  color: var(--color-text-sub);
+}
+
+/* 간단 버전 (로그인 후) */
+.simple {
+  background: var(--color-member-footer);
+  border-top-color: #e3e1df;
+}
+
+.simpleInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 32px 0 40px;
+}
+
+.simpleLinks {
+  display: flex;
+  gap: 20px;
+}
+
+.simpleLink {
+  font-size: 13px;
+  color: var(--color-text-sub);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.simple .copy {
+  margin-top: 0;
+  font-size: 13px;
+}
+
+@media (min-width: 768px) {
+  .inner {
+    padding: 40px var(--gutter) 46px;
+  }
+
+  .tagline {
+    font-size: 14px;
+  }
+
+  .links {
+    font-size: 14px;
+  }
+
+  .copy {
+    font-size: 12px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .inner {
+    max-width: var(--container);
+    padding: 48px 0 32px;
+  }
+
+  .links {
+    margin-top: 20px;
+    gap: 8px 24px;
+    font-size: 13px;
+  }
+
+  .tagline {
+    font-size: 14px;
+  }
+
+  .copy {
+    margin-top: 26px;
+    font-size: 11px;
+  }
+}

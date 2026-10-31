@@ -1,0 +1,157 @@
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-right: -8px;
+  color: var(--color-text);
+}
+
+/* 디자인시안 2-1: 오른쪽 드로어 + 어두운 배경 */
+.panel {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  visibility: hidden;
+  transition: visibility 0s linear 0.32s;
+}
+
+.panel[data-open="true"] {
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(47, 58, 54, 0.47);
+  opacity: 0;
+  transition: opacity 0.32s ease;
+}
+
+.panel[data-open="true"] .backdrop {
+  opacity: 1;
+}
+
+.sheet {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  width: min(359px, 88vw);
+  background: #fdfbfa;
+  box-shadow: -12px 0 40px rgba(47, 58, 54, 0.12);
+  transform: translateX(100%);
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.panel[data-open="true"] .sheet {
+  transform: translateX(0);
+}
+
+.sheetHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: none;
+  height: 64px;
+  padding: 0 24px;
+  border-bottom: 1px solid #e5e1df;
+}
+
+.close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-right: -10px;
+  color: var(--color-text);
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  padding: 0 24px;
+  border-bottom: 1px solid #e5e1df;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.link:hover {
+  background: var(--color-surface);
+}
+
+.chevron {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: #879c95;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.brand {
+  padding: 20px 24px 0;
+}
+
+.script {
+  font-family: var(--font-script), cursive;
+  font-size: 46px;
+  line-height: 1.3;
+  color: var(--color-bar);
+}
+
+.wave {
+  width: 158px;
+  height: 10px;
+  margin-top: 2px;
+  fill: none;
+  stroke: var(--color-gold);
+  stroke-width: 1.4;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: auto;
+  padding: 24px 24px 24px;
+  border-top: 1px solid #e5e1df;
+}
+
+.actionButton {
+  height: 52px;
+  font-size: 16px;
+}
+
+.login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 52px;
+  border-radius: var(--radius-pill);
+  border: 1px solid #7c8682;
+  background: var(--color-card);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.login:hover {
+  background: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet,
+  .backdrop {
+    transition: none;
+  }
+}

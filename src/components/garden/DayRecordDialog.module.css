@@ -1,0 +1,279 @@
+/* 열려 있는 동안 뒤 화면은 스크롤되지 않게 */
+:global(html:has(dialog[open])) {
+  overflow: hidden;
+}
+
+/* 모바일: 아래에서 올라오는 시트 */
+.dialog {
+  position: fixed;
+  inset: auto 0 0;
+  width: 100%;
+  max-width: none;
+  max-height: calc(100dvh - 72px);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 28px 28px 0 0;
+  background: var(--color-card);
+  color: var(--color-text);
+  box-shadow: 0 -10px 40px rgba(47, 58, 54, 0.12);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.dialog::backdrop {
+  background: rgba(40, 44, 42, 0.42);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .dialog[open] {
+    animation: sheetIn 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+@keyframes sheetIn {
+  from {
+    translate: 0 40px;
+    opacity: 0;
+  }
+}
+
+.body {
+  position: relative;
+  padding: 10px 20px calc(24px + env(safe-area-inset-bottom));
+}
+
+.grabber {
+  display: block;
+  width: 36px;
+  height: 4px;
+  margin: 0 auto 12px;
+  border-radius: 2px;
+  background: #ddd6d3;
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.meta {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--color-text-sub);
+}
+
+.close {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.photo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  aspect-ratio: 16 / 10;
+  margin-top: 22px;
+  border-radius: var(--radius-card);
+  background: var(--color-disabled-bg);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-sub);
+}
+
+.label {
+  margin-top: 26px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-sub);
+}
+
+.mood {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.keywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.keyword {
+  height: 34px;
+  padding: 0 16px;
+  font-size: 14px;
+}
+
+.memo {
+  margin-top: 16px;
+  font-size: 15px;
+  color: var(--color-text);
+}
+
+.fill {
+  margin-top: 26px;
+  padding: 20px 16px 16px;
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.fillLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-sub);
+}
+
+.fillTitle {
+  margin-top: 6px;
+  font-family: var(--font-serif);
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.fillMeta {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--color-text-sub);
+}
+
+.recos {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.reco {
+  padding: 16px 18px 18px;
+  border-radius: var(--radius-card);
+  border: 1px solid #ece4e2;
+  background: var(--color-card);
+  box-shadow: 0 4px 14px rgba(169, 112, 107, 0.06);
+}
+
+.recoTag {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-gold);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.recoTitle {
+  margin-top: 10px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.recoBody {
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text-sub);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.edit {
+  flex: 1;
+  gap: 8px;
+}
+
+.delete {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 52px;
+  padding: 0 16px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* 태블릿·데스크톱: 가운데 창 */
+@media (min-width: 768px) {
+  .dialog {
+    inset: 0;
+    width: min(760px, calc(100% - 64px));
+    max-height: calc(100dvh - 96px);
+    margin: auto;
+    border-radius: var(--radius-main);
+    box-shadow: 0 30px 80px rgba(47, 58, 54, 0.2);
+  }
+
+  @keyframes sheetIn {
+    from {
+      translate: 0 16px;
+      opacity: 0;
+    }
+  }
+
+  .body {
+    padding: 32px 36px 36px;
+  }
+
+  .grabber {
+    display: none;
+  }
+
+  .title {
+    font-size: 30px;
+  }
+
+  .meta {
+    font-size: 14px;
+  }
+
+  .photo {
+    margin-top: 26px;
+  }
+
+  .fill {
+    padding: 22px 20px 20px;
+  }
+
+  .recos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .actions {
+    justify-content: flex-end;
+  }
+
+  .edit {
+    flex: none;
+    padding: 0 28px;
+  }
+}

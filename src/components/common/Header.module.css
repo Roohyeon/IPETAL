@@ -1,0 +1,182 @@
+/* 헤더 배경은 #FDFBFA, 불투명도 100%.
+   태블릿·데스크톱에서 Hero 위에 있는 동안만 반투명 유리 */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: var(--header-h);
+  background-color: #fdfbfa;
+  border-bottom: 1px solid var(--color-line);
+  transition:
+    background-color 0.35s ease,
+    border-color 0.35s ease,
+    backdrop-filter 0.35s ease;
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  max-width: calc(var(--container) + var(--gutter) * 2);
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.nav {
+  display: none;
+}
+
+.navList {
+  display: flex;
+  align-items: center;
+  gap: 35px;
+}
+
+.navLink {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-sub);
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.navLink:hover {
+  color: var(--color-text);
+}
+
+.memberLink {
+  height: 71px;
+  padding: 0 14px;
+  font-weight: 500;
+}
+
+.memberLink[aria-current="page"] {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.memberLink[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--color-olive);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.login {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.profile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-card);
+  color: var(--color-text);
+}
+
+.hideOnMobile,
+.tabletOnly {
+  display: none !important;
+}
+
+.mobileOnly {
+  display: inline-flex;
+}
+
+@media (min-width: 768px) {
+  .inner {
+    padding: 0 var(--gutter);
+  }
+
+  .hideOnMobile,
+  .tabletOnly {
+    display: inline-flex !important;
+  }
+
+  .mobileOnly {
+    display: none;
+  }
+
+  .actions {
+    gap: 14px;
+  }
+
+  .login {
+    font-size: 15px;
+    margin-right: 6px;
+  }
+
+  .header[data-over-hero] {
+    background-color: rgba(253, 251, 250, 0.42);
+    border-bottom-color: rgba(255, 255, 255, 0.45);
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    backdrop-filter: blur(18px) saturate(1.4);
+  }
+}
+
+@media (min-width: 1200px) {
+  .inner {
+    position: relative;
+    width: min(var(--container), calc(100% - var(--gutter) * 2));
+    max-width: none;
+    padding: 0;
+  }
+
+  .nav {
+    display: block;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .tabletOnly {
+    display: none !important;
+  }
+
+  .login {
+    font-size: 15px;
+  }
+
+  .navLink {
+    font-size: 15px;
+  }
+
+  .memberLink {
+    font-size: 16px;
+  }
+
+  .navList:has(.memberLink) {
+    gap: 12px;
+  }
+
+  /* 섹션 메뉴는 보통 굵기, 지금 보고 있는 섹션만 굵게 */
+  .guestLink {
+    font-weight: 400;
+  }
+
+  .guestLink[aria-current="location"] {
+    color: var(--color-text);
+    font-weight: 700;
+  }
+}

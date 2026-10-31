@@ -1,0 +1,98 @@
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 30px;
+  padding: 40px 20px 48px;
+  border-radius: var(--radius-card);
+  border: 1px dashed #9aa19e;
+  background: var(--color-surface);
+  text-align: center;
+}
+
+.emptyPetal {
+  width: 34px;
+  height: auto;
+  fill: rgba(255, 255, 255, 0.6);
+  stroke: #a7a19d;
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+
+.emptyTitle {
+  margin-top: 16px;
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.emptySub {
+  margin-top: 8px;
+  font-size: 15px;
+  color: var(--color-text-sub);
+}
+
+.emptyButton {
+  margin-top: 16px;
+  height: 51px;
+  padding: 0 24px;
+  font-size: 15px;
+  border-color: #7c8682;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 27px;
+  margin-top: 30px;
+}
+
+.card {
+  min-height: 202px;
+  padding: 30px 26px 24px;
+  border-radius: var(--radius-card);
+  border: 1px solid #ebe3e0;
+  background: var(--color-card);
+  box-shadow: 0 6px 18px rgba(169, 112, 107, 0.07);
+}
+
+.cardDate {
+  font-size: 13px;
+  color: var(--color-text-sub);
+}
+
+.cardMood {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 20px;
+  font-family: var(--font-serif);
+  font-size: 21px;
+  font-weight: 700;
+}
+
+.cardTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 18px;
+}
+
+.tag {
+  height: 30px;
+  padding: 0 14px;
+  border-color: transparent;
+  background: #fff;
+  font-size: 13px;
+}
+
+.slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 202px;
+  border-radius: var(--radius-card);
+  border: 1px dashed #9aa19e;
+  font-size: 13px;
+  color: var(--color-text-sub);
+}
