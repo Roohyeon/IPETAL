@@ -3,6 +3,7 @@
 import type { Ref } from "react";
 import { TodayDone } from "./TodayDone";
 import { TodayRecordForm } from "./TodayRecordForm";
+import { TodaySaving } from "./TodaySaving";
 import type { TodayRecordState } from "./useTodayRecord";
 import styles from "./MemberHome.module.css";
 
@@ -12,9 +13,11 @@ type TodayRecordPanelProps = {
   formRef?: Ref<HTMLDivElement>;
 };
 
-/** 오늘 기록: 아직이면 질문 폼, 남겼으면 꽃잎 결과 + 마음 채우기 */
+/** 오늘 기록: 아직이면 질문 폼, 저장 중이면 로딩 장면, 남겼으면 꽃잎 결과 + 마음 채우기 */
 export function TodayRecordPanel({ state, formRef }: TodayRecordPanelProps) {
   const { mode, todayRecord } = state;
+
+  if (state.saving) return <TodaySaving />;
 
   if (mode === "form" || !todayRecord) {
     return (

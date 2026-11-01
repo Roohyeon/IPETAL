@@ -16,8 +16,8 @@
 }
 
 .md {
-  height: 42px;
-  padding: 0 13px;
+  height: 40px;
+  padding: 0 18px;
   font-size: 15px;
 }
 
@@ -39,7 +39,9 @@ button.chip:hover:not(.selected):not(.disabled) {
   font-weight: 700;
 }
 
+/* 모바일은 선택 상태를 색상으로만 구분 */
 .check {
+  display: none;
   flex: none;
 }
 
@@ -65,6 +67,10 @@ button.chip:hover:not(.selected):not(.disabled) {
 }
 
 @media (min-width: 768px) {
+  .check {
+    display: block;
+  }
+
   .md {
     height: 44px;
     padding: 0 15px;

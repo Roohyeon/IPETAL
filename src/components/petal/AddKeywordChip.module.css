@@ -13,7 +13,7 @@
 .md {
   height: 44px;
   padding: 0 24px;
-  font-size: 17px;
+  font-size: 14px;
 }
 
 .sm {
@@ -35,6 +35,11 @@ button.chip[aria-disabled="true"] {
   flex: none;
 }
 
+.md .icon {
+  width: 15px;
+  height: 15px;
+}
+
 .editing {
   background: var(--color-white);
 }
@@ -47,6 +52,11 @@ button.chip[aria-disabled="true"] {
 }
 
 @media (min-width: 768px) {
+  .md .icon {
+    width: 18px;
+    height: 18px;
+  }
+
   .md {
     height: 44px;
     padding: 0 18px;

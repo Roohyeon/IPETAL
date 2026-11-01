@@ -31,7 +31,9 @@ export function TodayRecordForm({ draft, onChange, ready, saving, onSave }: Toda
   const keywordTitleId = `${ids}-kw`;
   const moodTitleId = `${ids}-mood`;
   const memoInputId = `${ids}-memo`;
-  const [memoOpen, setMemoOpen] = useState(draft.memo.length > 0);
+  const [memoToggled, setMemoOpen] = useState(false);
+  // 다른 화면(기록 시트)에서 적은 메모가 있으면 펼쳐서 보여준다
+  const memoOpen = memoToggled || draft.memo.length > 0;
   const memoInputRef = useRef<HTMLInputElement>(null);
   const memoToggleRef = useRef<HTMLButtonElement>(null);
 

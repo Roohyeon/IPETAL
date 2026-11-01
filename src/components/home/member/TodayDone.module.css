@@ -23,7 +23,7 @@
 .resultTitle {
   margin-top: 28px;
   font-family: var(--font-serif);
-  font-size: 30px;
+  font-size: 24px;
   font-weight: 700;
   outline: none;
 }
@@ -35,8 +35,8 @@
 }
 
 .mood {
-  margin-top: 14px;
-  font-size: 17px;
+  margin-top: 7px;
+  font-size: 15px;
   color: var(--color-text-sub);
 }
 
@@ -78,7 +78,7 @@
 .fillTitle {
   margin-top: 6px;
   font-family: var(--font-serif);
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 700;
   line-height: 1.35;
 }
@@ -141,7 +141,7 @@
   height: 56px;
   background: var(--color-olive);
   border: 0;
-  font-size: 17px;
+  font-size: 15px;
 }
 
 .gardenButton:hover {
@@ -150,7 +150,7 @@
 
 .edit {
   font-family: var(--font-noto-kr), "Noto Sans KR", sans-serif;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 400;
 }
 
@@ -171,6 +171,11 @@
   .resultTitle {
     margin-top: 26px;
     font-size: 30px;
+  }
+
+  .mood {
+    margin-top: 14px;
+    font-size: 17px;
   }
 
   .keywords {
@@ -196,6 +201,11 @@
 
   .gardenButton {
     height: 52px;
+    font-size: 17px;
+  }
+
+  .edit {
+    font-size: 15px;
   }
 }
 

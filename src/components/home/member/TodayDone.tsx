@@ -32,9 +32,14 @@ export function TodayDone({ record, records, play, onEdit }: TodayDoneProps) {
   const recommendations = getRecommendations(record.mood, record.keywords);
   const summary = ["고른 내용", ...record.keywords, moodLabel(record.mood)].join(" · ");
 
-  // 저장 직후 결과로 포커스 이동 (스크린리더에 결과 전달)
+  // 저장 직후: 화면(시트 안이면 시트)을 맨 위로 올리고, 결과로 포커스 이동 (스크린리더에 결과 전달)
   useEffect(() => {
-    if (play) headingRef.current?.focus();
+    if (!play) return;
+    const heading = headingRef.current;
+    const sheet = heading?.closest("dialog");
+    if (sheet) sheet.scrollTo({ top: 0, behavior: "instant" });
+    else window.scrollTo({ top: 0, behavior: "instant" });
+    heading?.focus({ preventScroll: true });
   }, [play]);
 
   const reveal = (delay: number) =>
