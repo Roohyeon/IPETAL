@@ -22,6 +22,8 @@ export function MemberHome({ userName, initialRecords, today }: MemberHomeProps)
   const state = useTodayRecord(initialRecords, today);
   const { records } = state;
   const formTopRef = useRef<HTMLDivElement>(null);
+  // 기록 완료 화면은 인사 카드 없이 히어로가 화면 위를 채운다 (Opal 홈 구조)
+  const done = !state.saving && state.mode === "done" && state.todayRecord !== null;
 
   const goToForm = () => {
     formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -30,15 +32,24 @@ export function MemberHome({ userName, initialRecords, today }: MemberHomeProps)
 
   return (
     <MemberShell today={today} sheetContent={<TodayRecordPanel state={state} />}>
-      <main id="member-main" className={styles.main}>
-        <section id="today" aria-labelledby="today-title" className={styles.todayCard}>
-          <p className={styles.date}>{formatLongDate(today)}</p>
-          <h1 id="today-title" className={styles.greeting}>
-            {userName}님, 오늘도 수고했어요.
-          </h1>
+      <main id="member-main" className={`${styles.main} ${done ? styles.mainDone : ""}`}>
+        {done ? (
+          <section id="today" aria-labelledby="today-title" className={styles.todayDone}>
+            <h1 id="today-title" className={styles.srOnly}>
+              {formatLongDate(today)}, {userName}님의 오늘 기록
+            </h1>
+            <TodayRecordPanel state={state} />
+          </section>
+        ) : (
+          <section id="today" aria-labelledby="today-title" className={styles.todayCard}>
+            <p className={styles.date}>{formatLongDate(today)}</p>
+            <h1 id="today-title" className={styles.greeting}>
+              {userName}님, 오늘도 수고했어요.
+            </h1>
 
-          <TodayRecordPanel state={state} formRef={formTopRef} />
-        </section>
+            <TodayRecordPanel state={state} formRef={formTopRef} />
+          </section>
+        )}
 
         <div className={styles.desktopOnly}>
           <RecentPetals records={records} today={today} onStart={goToForm} />

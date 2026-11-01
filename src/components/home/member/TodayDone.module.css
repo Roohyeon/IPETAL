@@ -1,151 +1,366 @@
+/*
+ * 기록 완료 화면 (Opal 홈 구조)
+ * 히어로(배경 장면 + 받침대 위 꽃잎 + 바위 위 점수·지표) → 카드들 → 떠 있는 버튼
+ */
 .done {
   display: flex;
   flex-direction: column;
-  gap: 28px;
-  margin-top: 28px;
+  gap: 16px;
 }
 
-.result {
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── 히어로: 화면 가로 전체 ── */
+.hero {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 26px 20px 34px;
-  border-radius: var(--radius-panel);
-  border: 1px solid #e3dedb;
-  background: #fff;
+  margin-inline: calc(50% - 50vw);
+  padding: 36px 16px 30px;
+  overflow: hidden;
   text-align: center;
+  /* 연못 그림 배경. 아래로 갈수록 페이지 배경색으로 이어진다 */
+  background:
+    linear-gradient(180deg, rgba(252, 249, 248, 0) 55%, var(--color-member-bg) 100%),
+    url("/images/pond-illustration.jpg") center 62% / cover no-repeat;
+}
+
+/* 모바일: 연못 그림을 위로 올려 연꽃 무리가 보이게 */
+@media (max-width: 767px) {
+  .hero {
+    background-position-y: 0, -140px;
+    /* 위로 올린 만큼 그림을 키워 아래쪽이 비지 않게 */
+    background-size: 100% 100%, auto calc(100% + 140px);
+  }
+}
+
+/* 기록 시트 안에서는 시트 폭에 맞춘다 */
+:global(dialog) .hero {
+  margin-inline: 0;
+  border-radius: var(--radius-panel);
+}
+
+/* 꽃잎 + 받침 */
+.stage {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .burst {
-  width: 124px;
+  display: block;
+  width: 200px;
+  aspect-ratio: 1;
 }
 
-.resultTitle {
-  margin-top: 28px;
-  font-family: var(--font-serif);
-  font-size: 24px;
+/* 받침 자리: 3D 연잎이 놓이는 공간 */
+.stand {
+  width: 100%;
+  height: 84px;
+}
+
+/* 3D 캔버스: 헤더 바로 아래(히어로 맨 위)부터 연잎까지 덮는다 */
+.scene {
+  position: absolute;
+  left: 50%;
+  top: -36px;
+  /* 연잎 아랫부분이 잘리지 않게 바위 위까지 조금 더 내려온다 */
+  bottom: -28px;
+  width: 290px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.scene canvas {
+  display: block;
+}
+
+/* 바위: 받침이 올라앉고, 그 위에 점수와 지표 */
+.rock {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 460px);
+  margin-top: -14px;
+  padding: 24px 0 0;
+  border-radius: 46% 54% 0 0 / 34px 34px 0 0;
+  background: linear-gradient(
+    180deg,
+    rgba(252, 249, 248, 0.82) 0%,
+    rgba(252, 249, 248, 0.72) 55%,
+    rgba(252, 249, 248, 0) 100%
+  );
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+/* ── 점수 ── */
+.score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.scoreLabel {
+  font-size: 16px;
   font-weight: 700;
+  color: var(--color-primary);
   outline: none;
 }
 
-.resultMeta {
+.scoreValue {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  line-height: 1;
+  color: var(--color-primary);
+}
+
+.scoreNumber {
+  font-size: 72px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.scoreUp {
+  font-size: 22px;
+  color: var(--color-olive);
+}
+
+/* ── 괄호 + 지표 3개 ── */
+.breakdown {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.mood {
-  margin-top: 7px;
-  font-size: 15px;
-  color: var(--color-text-sub);
+.bracket {
+  width: 62%;
+  height: 36px;
+  margin-top: 12px;
+  fill: none;
+  stroke: var(--color-border-strong);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
 }
 
-.mood strong {
-  color: var(--color-text);
-}
-
-.keywords {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 6px 30px;
-  margin-top: 18px;
-  font-size: 16px;
-}
-
-.memo {
-  margin-top: 14px;
-  font-size: 15px;
-  color: var(--color-text);
-}
-
-.note {
-  margin-top: 26px;
-  font-size: 15px;
-  color: var(--color-text-sub);
-}
-
-.fillHead {
-  padding: 0 0 2px;
-}
-
-.fillLabel {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--color-text-sub);
-}
-
-.fillTitle {
-  margin-top: 6px;
-  font-family: var(--font-serif);
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1.35;
-}
-
-.fillMeta {
-  margin-top: 8px;
-  font-size: 13px;
-  color: var(--color-text-sub);
-}
-
-.recos {
+.stats {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 12px;
-  margin-top: 18px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 10px;
+  width: 100%;
+  margin-top: 8px;
 }
 
-.reco {
-  padding: 16px 18px 18px;
-  border-radius: var(--radius-card);
-  border: 1px solid #ece4e2;
-  background: var(--color-card);
-  box-shadow: 0 4px 14px rgba(169, 112, 107, 0.06);
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
 }
 
-.recoTag {
+.pill {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  height: 24px;
-  padding: 0 10px;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  max-width: 100px;
+  height: 60px;
   border-radius: var(--radius-pill);
-  border: 1px solid var(--color-gold);
-  font-size: 12px;
-  font-weight: 700;
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--color-primary);
 }
 
-.recoTitle {
-  margin-top: 10px;
+.pillActive {
+  background: var(--color-white);
+}
+
+.ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.ringFill {
+  fill: none;
+  stroke: var(--color-olive);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  /* rect 경로는 왼쪽 위 곡선이 끝나는 지점부터 시작 → 위쪽 가운데부터 차오르게 */
+  stroke-dashoffset: -7.4;
+}
+
+.pillIcon {
+  display: inline-flex;
+  color: var(--color-olive);
+}
+
+.pillValue {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.statLabel {
   font-size: 16px;
   font-weight: 700;
+  color: var(--color-primary);
 }
 
-.recoBody {
-  margin-top: 6px;
-  font-size: 14px;
-  line-height: 1.6;
+/* ── 카드 (Opal의 Screen time) ── */
+.card {
+  width: 100%;
+  max-width: 640px;
+  margin-inline: auto;
+  padding: 28px 24px 18px;
+  border-radius: 32px;
+  border: 1px solid #ece4e2;
+  background: var(--color-white);
+  box-shadow: var(--shadow-card);
+}
+
+.cardLabel {
+  font-size: 17px;
+  font-weight: 700;
   color: var(--color-text-sub);
 }
 
-.actions {
+.cardValue {
+  margin-top: 10px;
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.cardTitle {
+  margin-top: 10px;
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.cardSub {
+  margin-top: 10px;
+  font-size: 18px;
+  color: var(--color-text-sub);
+}
+
+.divider {
+  margin: 22px 0 4px;
+  border: 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.rows {
   display: flex;
   flex-direction: column;
+}
+
+.row {
+  display: flex;
   align-items: center;
-  gap: 22px;
-  margin-top: 26px;
+  gap: 16px;
+  padding: 14px 0;
 }
 
-.gardenButton {
-  width: 100%;
-  height: 56px;
-  background: var(--color-olive);
-  border: 0;
-  font-size: 15px;
+.badge {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--mood-best), var(--color-gold));
+  color: var(--color-white);
+  font-size: 18px;
+  font-weight: 700;
 }
 
-.gardenButton:hover {
-  background: var(--color-olive-hover);
+.row:nth-child(2) .badge {
+  background: linear-gradient(135deg, var(--color-olive), var(--color-primary));
+}
+
+.row:nth-child(3) .badge {
+  background: linear-gradient(135deg, var(--color-gold), var(--mood-good));
+}
+
+.row:nth-child(4) .badge {
+  background: linear-gradient(135deg, var(--color-primary), var(--mood-best));
+}
+
+.row:nth-child(5) .badge {
+  background: linear-gradient(135deg, var(--mood-good), var(--color-olive));
+}
+
+.badgeTag {
+  border-radius: 50%;
+  font-size: 13px;
+}
+
+.rowMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.rowName {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.rowBody {
+  margin-top: 3px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text-sub);
+}
+
+.bar {
+  display: block;
+  height: 6px;
+  margin-top: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-line);
+}
+
+.barFill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--mood-best);
+}
+
+.rowValue {
+  flex: none;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--mood-best);
+}
+
+.editRow {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
 }
 
 .edit {
@@ -154,159 +369,76 @@
   font-weight: 400;
 }
 
-@media (min-width: 768px) {
-  .done {
-    gap: 28px;
-    margin-top: 34px;
-  }
+/* ── 떠 있는 버튼 ── */
+.ctaWrap {
+  position: sticky;
+  bottom: calc(var(--tabbar-h) + 14px + env(safe-area-inset-bottom));
+  z-index: 5;
+  display: flex;
+  justify-content: center;
+  margin-top: 4px;
+  pointer-events: none;
+}
 
-  .result {
-    padding: 34px 24px 28px;
+/* 기록 시트(dialog)와 데스크톱에는 탭바가 없음 */
+:global(dialog) .ctaWrap {
+  bottom: 16px;
+}
+
+.cta {
+  height: 62px;
+  padding: 0 28px;
+  gap: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: linear-gradient(180deg, #6d857d 0%, var(--color-primary-hover) 100%);
+  color: var(--color-text-on-primary);
+  font-size: 19px;
+  box-shadow: 0 14px 34px rgba(78, 98, 92, 0.32);
+  pointer-events: auto;
+}
+
+.cta:hover {
+  background: var(--color-primary-hover);
+}
+
+.ctaPlay {
+  font-size: 15px;
+}
+
+@media (min-width: 768px) {
+  .hero {
+    padding-top: 48px;
   }
 
   .burst {
-    width: 136px;
+    width: 230px;
   }
 
-  .resultTitle {
-    margin-top: 26px;
-    font-size: 30px;
+  .stand {
+    height: 96px;
   }
 
-  .mood {
-    margin-top: 14px;
-    font-size: 17px;
+  .scene {
+    top: -48px;
+    width: 330px;
   }
 
-  .keywords {
-    gap: 6px 32px;
+  .scoreNumber {
+    font-size: 84px;
   }
 
-  .fillTitle {
-    font-size: 26px;
+  .pill {
+    max-width: 116px;
+    height: 64px;
   }
 
-  .recos {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 13px;
-  }
-
-  .reco {
-    padding: 18px 20px 22px;
-  }
-
-  .actions {
-    margin-top: 28px;
-  }
-
-  .gardenButton {
-    height: 52px;
-    font-size: 17px;
-  }
-
-  .edit {
-    font-size: 15px;
+  .card {
+    padding: 32px 32px 20px;
   }
 }
 
 @media (min-width: 1200px) {
-  .done {
-    display: grid;
-    grid-template-columns: 422px minmax(0, 1fr);
-    gap: 48px;
-    margin-top: 40px;
-  }
-
-  .result {
-    height: 452px;
-    justify-content: center;
-    padding: 30px 24px;
-    border-radius: 20px;
-  }
-
-  .burst {
-    width: 140px;
-  }
-
-  .resultTitle {
-    margin-top: 32px;
-    font-size: 30px;
-  }
-
-  .mood {
-    margin-top: 12px;
-    font-size: 15px;
-  }
-
-  .keywords {
-    margin-top: 16px;
-    font-size: 14px;
-    gap: 6px 30px;
-  }
-
-  .note {
-    margin-top: 26px;
-    font-size: 13px;
-  }
-
-  .fillLabel {
-    font-size: 12px;
-  }
-
-  .fillTitle {
-    margin-top: 6px;
-    font-size: 30px;
-  }
-
-  .fillMeta {
-    margin-top: 6px;
-    font-size: 12px;
-  }
-
-  .recos {
-    gap: 16px;
-    margin-top: 20px;
-  }
-
-  .reco {
-    min-height: 120px;
-    padding: 20px 20px 22px;
-  }
-
-  .recoTag {
-    height: 22px;
-    font-size: 12px;
-  }
-
-  .recoTitle {
-    margin-top: 8px;
-    font-size: 16px;
-  }
-
-  .recoBody {
-    margin-top: 10px;
-    font-size: 13px;
-  }
-
-  .actions {
-    flex-direction: row;
-    gap: 17px;
-    margin-top: 28px;
-  }
-
-  .gardenButton {
-    width: auto;
-    height: 51px;
-    padding: 0 24px;
-    background: var(--color-primary);
-    font-size: 16px;
-  }
-
-  .gardenButton:hover {
-    background: var(--color-primary-hover);
-  }
-
-  .edit {
-    font-size: 15px;
+  .ctaWrap {
+    bottom: 24px;
   }
 }
