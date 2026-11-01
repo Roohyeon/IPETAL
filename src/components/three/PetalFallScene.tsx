@@ -4,7 +4,7 @@ import { useGLTF } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Suspense, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import type { Mood } from "@/types/record";
+import { createDewMaterial, createPetalMaterial } from "./lotusMaterials";
 
 const LEAF_URL = "/models/lotus-leaf.glb";
 const PETAL_URL = "/models/lotus-petal.glb";
@@ -22,7 +22,7 @@ const LEAF_BOTTOM_PX = 72;
  * 1) 앞면(이슬 맺힌 안쪽 면)을 보는 사람 쪽으로, 대각선으로 기운 채 천천히 내려오다
  * 2) 연잎에 닿지 않고 바로 위에서 깃털처럼 살살 떠 있는다
  */
-const FALL_SECONDS = 6;
+const FALL_SECONDS = 4;
 /**
  * 떨어지는 속도 곡선: 헤더에서 살며시 출발 → 중간에 가장 빠르게(떨어지는 느낌)
  * → 연잎에 가까워질수록 길게 잦아든다. 속도 ∝ p·(1-p)^2.6 을 누적해 0~1 진행도로 만든다.
@@ -45,6 +45,15 @@ function fallProgress(p: number) {
   const next = FALL_CURVE[Math.min(i + 1, FALL_CURVE.length - 1)];
   return FALL_CURVE[i] + (next - FALL_CURVE[i]) * (x - i);
 }
+/**
+ * 이 진행도(0~1)를 넘으면 내려앉은 것으로 본다.
+ * 속도 곡선상 뒤쪽은 아주 느리게 잦아들어, 0.6쯤이면 이미 연잎 바로 위다 (토스트·점수를 일찍 보여주려고)
+ */
+const LANDED_AT = 0.6;
+/** 연잎이 페이드인되는 시간(초) */
+const LEAF_FADE_SECONDS = 1.2;
+/** 활짝 핀 Hero 연꽃과 같은 햇빛 세기 */
+const FULL_SUN = { value: 1 };
 /** 대각선 기울기 (화면 기준, 라디안) — 음수면 위쪽 끝이 오른쪽으로 */
 const DIAGONAL = -0.62;
 /** 살랑임: 한 번 왕복하는 시간(초), 좌우 폭, 양 끝에서 떠오르는 높이, 기울어지는 정도 */
@@ -68,17 +77,6 @@ const FLOAT_GAP = 0.022;
 const FLOAT_Y =
   LEAF_TOP_Y + ((PETAL_LENGTH / 2) * Math.cos(DIAGONAL)) / Math.cos(ELEVATION) + FLOAT_GAP;
 
-/** 하루 느낌 → 꽃잎 색 (tokens.css --mood-*) */
-const MOOD_COLORS: Record<Mood, string> = {
-  best: "#d98f8a",
-  good: "#e4aeaa",
-  okay: "#ecc5c3",
-  tired: "#f2d9d8",
-  hard: "#f8eceb",
-};
-/** 모델 원래 색에 하루 느낌 색을 섞는 정도 */
-const TINT = 0.55;
-
 /**
  * 연잎 색: 올리브 그린(#8a9a5b, --color-olive)에 가깝게.
  * 텍스처의 밝고 어두운 결은 살리고 색만 바꾼다.
@@ -93,7 +91,6 @@ const LEAF_BASE_LUMA: Record<string, number> = { LeafTop: 0.4, LeafUnderside: 0.
  */
 type Pastel = { saturation: number; whiten: number };
 const LEAF_PASTEL: Pastel = { saturation: 1.25, whiten: 0.24 };
-const PETAL_PASTEL: Pastel = { saturation: 0.65, whiten: 0.38 };
 
 function pastelGlsl({ saturation, whiten }: Pastel) {
   return `
@@ -102,20 +99,6 @@ function pastelGlsl({ saturation, whiten }: Pastel) {
       pastelSrgb = mix(vec3(pastelLum), pastelSrgb, ${saturation.toFixed(2)});
       pastelSrgb = mix(pastelSrgb, vec3(1.0), ${whiten.toFixed(2)});
       diffuseColor.rgb = pow(clamp(pastelSrgb, 0.0, 1.0), vec3(2.2));`;
-}
-
-/** 꽃잎: 하루 느낌 색을 섞은 뒤 파스텔 톤으로 */
-function pastelPetal(material: THREE.MeshStandardMaterial, tint: THREE.Color) {
-  const copy = material.clone();
-  if (copy.color) copy.color.lerp(tint, TINT);
-  copy.onBeforeCompile = (shader) => {
-    shader.fragmentShader = shader.fragmentShader.replace(
-      "#include <map_fragment>",
-      `#include <map_fragment>${pastelGlsl(PETAL_PASTEL)}`,
-    );
-  };
-  copy.customProgramCacheKey = () => "ipetal-petal-pastel";
-  return copy;
 }
 
 function recolorLeaf(material: THREE.MeshStandardMaterial, baseLuma: number) {
@@ -168,9 +151,12 @@ const smooth = (x: number) => {
 };
 
 type PetalFallSceneProps = {
-  mood: Mood;
   /** false면 떨어지는 연출 없이 연잎 위에 떠 있는 상태로 시작 */
   animate: boolean;
+  /** 꽃잎이 연잎 위에 내려앉았을 때 한 번 (animate=false면 처음부터 내려앉은 상태라 바로) */
+  onLanded?: () => void;
+  /** 꽃잎이 연잎까지 거리의 절반쯤 내려왔을 때 한 번 (animate=false면 바로) */
+  onHalfway?: () => void;
 };
 
 /** 캔버스 크기에 맞춰 직교 카메라 배율·시점을 맞춘다 (연잎은 아래쪽, 위는 꽃잎이 떨어질 공간) */
@@ -201,7 +187,15 @@ function CameraRig() {
   return null;
 }
 
-function Leaf() {
+/** 연잎 안의 재질들에 차례로 fn을 적용 */
+function forEachMaterial(root: THREE.Object3D, fn: (material: THREE.Material) => void) {
+  root.traverse((object) => {
+    const mesh = object as THREE.Mesh;
+    if (mesh.isMesh) fn(mesh.material as THREE.Material);
+  });
+}
+
+function Leaf({ fadeIn }: { fadeIn: boolean }) {
   const { scene } = useGLTF(LEAF_URL);
   const leaf = useMemo(() => {
     const copy = scene.clone(true);
@@ -210,17 +204,40 @@ function Leaf() {
       if (!mesh.isMesh) return;
       const material = mesh.material as THREE.MeshStandardMaterial;
       const baseLuma = LEAF_BASE_LUMA[material.name];
-      if (baseLuma) mesh.material = recolorLeaf(material, baseLuma);
+      const next = baseLuma ? recolorLeaf(material, baseLuma) : material.clone();
+      // 페이드인: 처음엔 투명
+      if (fadeIn) {
+        next.transparent = true;
+        next.opacity = 0;
+      }
+      mesh.material = next;
     });
     return copy;
-  }, [scene]);
+  }, [scene, fadeIn]);
   const ref = useRef<THREE.Group>(null);
+  const fadeStartedAt = useRef<number | null>(null);
+  const fadeDone = useRef(!fadeIn);
 
-  // 물 위에 뜬 듯 아주 살짝 흔들린다
+  // 물 위에 뜬 듯 아주 살짝 흔들린다 (+ 처음 LEAF_FADE_SECONDS 동안 페이드인)
   useFrame(({ clock }) => {
     const g = ref.current;
     if (!g) return;
     const t = clock.elapsedTime;
+    if (!fadeDone.current) {
+      fadeStartedAt.current ??= t;
+      const opacity = smooth((t - fadeStartedAt.current) / LEAF_FADE_SECONDS);
+      forEachMaterial(g, (material) => {
+        material.opacity = opacity;
+      });
+      // 다 나타나면 불투명으로 되돌린다 (투명 정렬 비용·겹침 문제 없게)
+      if (opacity >= 1) {
+        fadeDone.current = true;
+        forEachMaterial(g, (material) => {
+          material.transparent = false;
+          material.needsUpdate = true;
+        });
+      }
+    }
     g.position.y = Math.sin(t * 1.1) * 0.0012;
     g.rotation.x = Math.sin(t * 0.8) * 0.02;
     g.rotation.z = Math.cos(t * 0.7) * 0.015;
@@ -233,7 +250,7 @@ function Leaf() {
   );
 }
 
-function FallingPetal({ mood, animate }: PetalFallSceneProps) {
+function FallingPetal({ animate, onLanded, onHalfway }: PetalFallSceneProps) {
   const { scene } = useGLTF(PETAL_URL);
   const { startY } = useFraming();
   const ref = useRef<THREE.Group>(null);
@@ -241,31 +258,46 @@ function FallingPetal({ mood, animate }: PetalFallSceneProps) {
   const shadowRef = useRef<THREE.Mesh>(null);
   const shadowMap = useMemo(() => getShadowTexture(), []);
   const startedAt = useRef<number | null>(null);
+  const landed = useRef(false);
+  const halfway = useRef(false);
+  const animateAtStart = useRef(animate);
 
-  // 모델은 캐시에서 함께 쓰므로 복제하고, 재질도 복제해 하루 느낌 색 + 파스텔 톤을 입힌다
+  // 모델은 캐시에서 함께 쓰므로 복제하고, 로그인 전 Hero 3D 연꽃과 같은 재질(색)을 입힌다
   const petal = useMemo(() => {
     const copy = scene.clone(true);
-    const tint = new THREE.Color(MOOD_COLORS[mood]);
     copy.traverse((object) => {
       const mesh = object as THREE.Mesh;
       if (!mesh.isMesh) return;
       const material = mesh.material as THREE.MeshStandardMaterial;
-      // 이슬 방울은 그대로(투명), 꽃잎만 파스텔 톤으로
-      mesh.material = mesh.name === "DewDrops" ? material.clone() : pastelPetal(material, tint);
+      mesh.material =
+        mesh.name === "DewDrops" ? createDewMaterial() : createPetalMaterial(material, FULL_SUN);
     });
     return copy;
-  }, [scene, mood]);
+  }, [scene]);
 
   useFrame(({ clock }) => {
     const g = ref.current;
     const roll = rollRef.current;
     if (!g || !roll) return;
     const now = clock.elapsedTime;
-    if (startedAt.current === null) startedAt.current = now;
+    if (startedAt.current === null) {
+      startedAt.current = now;
+      // 시작할 때의 animate로 고정 (도중에 바뀌어도 꽃잎이 튀지 않게)
+      animateAtStart.current = animate;
+    }
     // 연출이 없으면 처음부터 떠 있는 상태
-    const t = animate ? now - startedAt.current : FALL_SECONDS + now;
+    const t = animateAtStart.current ? now - startedAt.current : FALL_SECONDS + now;
     const fallP = t / FALL_SECONDS;
     const floatT = Math.max(0, t - FALL_SECONDS);
+    // 속도 곡선상 마지막 15%는 거의 멈춰 있으므로, 그쯤을 '내려앉음'으로 본다
+    if (!halfway.current && fallProgress(fallP) >= 0.5) {
+      halfway.current = true;
+      onHalfway?.();
+    }
+    if (!landed.current && fallP >= LANDED_AT) {
+      landed.current = true;
+      onLanded?.();
+    }
 
     // 중심 높이: 내려오며 점점 느려져 연잎 바로 위에 멈춘 뒤, 위아래로 살살
     const bob = Math.sin((floatT / BOB_PERIOD) * Math.PI * 2) * BOB_HEIGHT * smooth(floatT / 2);
@@ -320,7 +352,7 @@ function FallingPetal({ mood, animate }: PetalFallSceneProps) {
  * 앞면을 보이며 대각선으로 기운 채 연잎 바로 위에서 깃털처럼 살살 떠 있는다.
  * next/dynamic(ssr: false)로만 불러온다 — 서버에는 WebGL이 없다.
  */
-export default function PetalFallScene({ mood, animate }: PetalFallSceneProps) {
+export default function PetalFallScene({ animate, onLanded, onHalfway }: PetalFallSceneProps) {
   return (
     <Canvas
       orthographic
@@ -339,8 +371,8 @@ export default function PetalFallScene({ mood, animate }: PetalFallSceneProps) {
       <directionalLight position={[0.4, 1, 0.6]} intensity={1.8} color="#fffaf3" />
       <directionalLight position={[-0.6, 0.5, 0.3]} intensity={0.6} color="#ffeceb" />
       <Suspense fallback={null}>
-        <Leaf />
-        <FallingPetal mood={mood} animate={animate} />
+        <Leaf fadeIn={animate} />
+        <FallingPetal animate={animate} onLanded={onLanded} onHalfway={onHalfway} />
       </Suspense>
     </Canvas>
   );

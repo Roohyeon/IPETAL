@@ -187,8 +187,9 @@
 
 .saveButton {
   width: 100%;
-  height: 47px;
-  font-size: 15px;
+  height: 51px;
+  font-size: 17px;
+  letter-spacing: 0.5px;
 }
 
 .memoOpen {
@@ -260,11 +261,6 @@
   .actions {
     margin-top: 22px;
     gap: 26px;
-  }
-
-  .saveButton {
-    height: 56px;
-    font-size: 17px;
   }
 
   .memoOpen {
@@ -341,8 +337,6 @@
 
   .saveButton {
     width: 212px;
-    height: 59px;
-    font-size: 18px;
     font-weight: 400;
   }
 

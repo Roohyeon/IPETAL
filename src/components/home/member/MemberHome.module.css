@@ -2,7 +2,7 @@
   position: relative;
   max-width: calc(var(--container) + var(--gutter) * 2);
   margin: 0 auto;
-  padding: 40px 40px 40px;
+  padding: 0;
 }
 
 .todayCard {
@@ -56,10 +56,6 @@
 }
 
 @media (min-width: 768px) {
-  .main {
-    padding: 40px var(--gutter) 48px;
-  }
-
   .todayCard {
     padding: 38px 29px 40px;
   }
@@ -74,7 +70,6 @@
   .main {
     max-width: none;
     width: min(var(--container) + 6px, calc(100% - var(--gutter) * 2));
-    padding: 57px 0 88px;
   }
 
   .todayCard {
@@ -91,8 +86,3 @@
   }
 }
 
-/* 기록 완료: 히어로가 헤더 바로 아래부터 (모든 화면 폭) */
-.main.mainDone {
-  padding-top: 0;
-  padding-inline: 16px;
-}

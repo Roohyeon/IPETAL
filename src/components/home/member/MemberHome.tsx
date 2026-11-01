@@ -31,8 +31,8 @@ export function MemberHome({ userName, initialRecords, today }: MemberHomeProps)
   };
 
   return (
-    <MemberShell today={today} sheetContent={<TodayRecordPanel state={state} />}>
-      <main id="member-main" className={`${styles.main} ${done ? styles.mainDone : ""}`}>
+    <MemberShell today={today} sheetContent={<TodayRecordPanel state={state} inSheet />}>
+      <main id="member-main" className={styles.main}>
         {done ? (
           <section id="today" aria-labelledby="today-title" className={styles.todayDone}>
             <h1 id="today-title" className={styles.srOnly}>

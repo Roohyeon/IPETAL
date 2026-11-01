@@ -7,6 +7,7 @@ import { GUEST_SECTIONS, ROUTES } from "@/data/routes";
 import { UserIcon } from "./Icons";
 import { Logo } from "./Logo";
 import { MobileMenu } from "./MobileMenu";
+import { ProfileMenu } from "./ProfileMenu";
 import styles from "./Header.module.css";
 
 const MEMBER_NAV = [
@@ -81,66 +82,66 @@ export function Header({ variant }: { variant: "guest" | "member" }) {
   const currentSection = useCurrentSection(variant === "guest" ? GUEST_SECTION_IDS : NO_SECTIONS);
 
   return (
-    <header className={styles.header} data-over-hero={overHero || undefined}>
-      <div className={styles.inner}>
-        <Logo />
+    <>
+      {/* 모바일에서는 헤더가 fixed라, 흐름에서 빠진 헤더 높이만큼 자리를 채운다 */}
+      <div className={styles.spacer} aria-hidden="true" />
+      <header className={styles.header} data-over-hero={overHero || undefined}>
+        <div className={styles.inner}>
+          <Logo />
 
-        {variant === "guest" ? (
-          <>
-            <nav className={styles.nav} aria-label="페이지 섹션">
-              <ul className={styles.navList}>
-                {GUEST_SECTIONS.map((section) => (
-                  <li key={section.id}>
-                    <a
-                      href={`#${section.id}`}
-                      className={`${styles.navLink} ${styles.guestLink}`}
-                      aria-current={currentSection === section.id ? "location" : undefined}
-                    >
-                      {section.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-            <div className={styles.actions}>
-              {/* TODO: 로그인 경로 연결 */}
-              <Link href={ROUTES.login} className={`${styles.login} ${styles.hideOnMobile}`}>
-                로그인
-              </Link>
-              <MobileMenu className={styles.tabletOnly} />
-              <Link href={ROUTES.login} className={`${styles.profile} ${styles.mobileOnly}`}>
-                <UserIcon size={26} />
-                <span className="visually-hidden">로그인</span>
-              </Link>
-            </div>
-          </>
-        ) : (
-          <>
-            <nav className={styles.nav} aria-label="주요 메뉴">
-              <ul className={styles.navList}>
-                {MEMBER_NAV.map((item) => (
-                  <li key={item.label}>
-                    <Link
-                      href={item.href}
-                      className={`${styles.navLink} ${styles.memberLink}`}
-                      aria-current={item.match(pathname) ? "page" : undefined}
-                    >
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-            <div className={styles.actions}>
-              {/* TODO: 마이 페이지 경로 연결 */}
-              <Link href={ROUTES.my} className={styles.profile}>
-                <UserIcon size={24} />
-                <span className="visually-hidden">마이 페이지</span>
-              </Link>
-            </div>
-          </>
-        )}
-      </div>
-    </header>
+          {variant === "guest" ? (
+            <>
+              <nav className={styles.nav} aria-label="페이지 섹션">
+                <ul className={styles.navList}>
+                  {GUEST_SECTIONS.map((section) => (
+                    <li key={section.id}>
+                      <a
+                        href={`#${section.id}`}
+                        className={`${styles.navLink} ${styles.guestLink}`}
+                        aria-current={currentSection === section.id ? "location" : undefined}
+                      >
+                        {section.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+              <div className={styles.actions}>
+                {/* TODO: 로그인 경로 연결 */}
+                <Link href={ROUTES.login} className={`${styles.login} ${styles.hideOnMobile}`}>
+                  로그인
+                </Link>
+                <MobileMenu className={styles.tabletOnly} />
+                <Link href={ROUTES.login} className={`${styles.profile} ${styles.mobileOnly}`}>
+                  <UserIcon size={26} />
+                  <span className="visually-hidden">로그인</span>
+                </Link>
+              </div>
+            </>
+          ) : (
+            <>
+              <nav className={styles.nav} aria-label="주요 메뉴">
+                <ul className={styles.navList}>
+                  {MEMBER_NAV.map((item) => (
+                    <li key={item.label}>
+                      <Link
+                        href={item.href}
+                        className={`${styles.navLink} ${styles.memberLink}`}
+                        aria-current={item.match(pathname) ? "page" : undefined}
+                      >
+                        {item.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+              <div className={styles.actions}>
+                <ProfileMenu className={styles.profile} />
+              </div>
+            </>
+          )}
+        </div>
+      </header>
+    </>
   );
 }
