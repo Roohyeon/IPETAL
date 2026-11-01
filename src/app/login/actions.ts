@@ -14,3 +14,9 @@ export async function demoLogin() {
   });
   redirect("/");
 }
+
+/** 로그아웃: 체험 로그인 쿠키를 지우고 로그인 전 HOME으로. TODO: 실제 로그아웃 연결 */
+export async function logout() {
+  (await cookies()).delete(DEMO_LOGIN_COOKIE);
+  redirect("/");
+}
