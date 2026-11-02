@@ -110,6 +110,13 @@
   pointer-events: none;
 }
 
+/* 모바일: 연꽃 둘레의 햇살 빛은 끈다 */
+@media (max-width: 767px) {
+  .sunGlow {
+    display: none;
+  }
+}
+
 .content {
   position: absolute;
   inset: 0 0 96px;

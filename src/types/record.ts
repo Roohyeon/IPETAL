@@ -11,6 +11,8 @@ export type DailyRecord = {
   keywords: Keyword[];
   mood: Mood;
   memo?: string;
+  /** 그날의 사진 (선택). 지금은 줄인 JPEG data URL — TODO: 실제 업로드 URL로 교체 */
+  photo?: string;
   /** 기록한 시각 HH:mm (Asia/Seoul) */
   recordedAt?: string;
 };

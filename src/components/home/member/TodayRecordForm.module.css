@@ -88,6 +88,67 @@
   margin-top: 30px;
 }
 
+/* 사진 (선택) */
+.photo {
+  margin-top: 30px;
+}
+
+.photoPick {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  margin-top: 14px;
+  border-radius: 18px;
+  border: 1.5px dashed #d9d3cf;
+  background: var(--color-card);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-sub);
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.photoPick:hover {
+  border-color: var(--color-primary);
+  background: var(--color-surface);
+}
+
+.photoPick:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+.photoPreview {
+  margin-top: 14px;
+}
+
+.photoImage {
+  display: block;
+  width: 100%;
+  max-height: 360px;
+  border-radius: 18px;
+  object-fit: cover;
+}
+
+.photoActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.photoError {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #b4534a;
+}
+
 .memoHead {
   display: flex;
   align-items: center;

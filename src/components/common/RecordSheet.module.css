@@ -19,6 +19,20 @@
   overscroll-behavior: contain;
 }
 
+/* 기록을 남긴 뒤(DayRecordContent): 헤더·버튼은 고정, 가운데만 스크롤 */
+.sheet[open]:has([data-day-record-scroll]) {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sheet[open]:has([data-day-record-scroll]) > .body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 10px 0 calc(36px + env(safe-area-inset-bottom));
+}
+
 .sheet::backdrop {
   background: rgba(40, 44, 42, 0.42);
 }
@@ -68,9 +82,10 @@
 
 .grabber {
   display: block;
-  width: 36px;
+  flex: none;
+  width: 50px;
   height: 4px;
-  margin: 0 auto 14px;
+  margin: 3px auto 30px;
   border-radius: 2px;
   background: #ddd6d3;
 }
@@ -81,6 +96,28 @@
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 4px;
+}
+
+/* 손잡이·헤더: 잡고 아래로 끌면 닫힌다 (끄는 동안 화면이 스크롤되지 않게) */
+.body [data-sheet-handle] {
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+}
+
+.body [data-sheet-handle]:active {
+  cursor: grabbing;
+}
+
+/* 손잡이를 잡기 쉽게 위아래로 터치 영역을 넓힌다 (보이는 크기는 그대로) */
+.grabber {
+  position: relative;
+}
+
+.grabber::before {
+  content: "";
+  position: absolute;
+  inset: -14px -40px;
 }
 
 .date {

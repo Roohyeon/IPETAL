@@ -1,6 +1,10 @@
 "use client";
 
 import type { Ref } from "react";
+import { RECORD_SHEET_TITLE_ID, RecordSheetHead } from "@/components/common/RecordSheet";
+import { DayRecordContent } from "@/components/garden/DayRecordContent";
+import { isSameMonth } from "@/lib/date";
+import { deleteRecord } from "@/lib/recordRepository";
 import { TodayDone } from "./TodayDone";
 import { TodayRecordForm } from "./TodayRecordForm";
 import { TodaySaving } from "./TodaySaving";
@@ -11,7 +15,7 @@ type TodayRecordPanelProps = {
   state: TodayRecordState;
   /** 작성 폼 영역 (HOME에서 폼으로 스크롤할 때 사용) */
   formRef?: Ref<HTMLDivElement>;
-  /** 기록 시트(하단 탭 +) 안에서 보여줄 때: 기록 완료 화면은 카드만 */
+  /** 기록 시트(하단 탭 +) 안에서 보여줄 때: 기록 완료 화면은 달력 날짜 모달과 같은 내용 */
   inSheet?: boolean;
 };
 
@@ -19,11 +23,22 @@ type TodayRecordPanelProps = {
 export function TodayRecordPanel({ state, formRef, inSheet = false }: TodayRecordPanelProps) {
   const { mode, todayRecord } = state;
 
-  if (state.saving) return <TodaySaving />;
+  // 시트 안: 작성 폼·저장 중에는 '오늘의 꽃잎 남기기' 머리를 붙인다
+  const sheetHead = inSheet ? <RecordSheetHead /> : null;
+
+  if (state.saving) {
+    return (
+      <>
+        {sheetHead}
+        <TodaySaving />
+      </>
+    );
+  }
 
   if (mode === "form" || !todayRecord) {
     return (
       <div ref={formRef} className={styles.formWrap}>
+        {sheetHead}
         <TodayRecordForm
           draft={state.draft}
           onChange={state.setDraft}
@@ -35,13 +50,29 @@ export function TodayRecordPanel({ state, formRef, inSheet = false }: TodayRecor
     );
   }
 
+  if (inSheet) {
+    const order = state.records.filter(
+      (r) => isSameMonth(r.date, todayRecord.date) && r.date <= todayRecord.date,
+    ).length;
+    return (
+      <DayRecordContent
+        record={todayRecord}
+        order={order}
+        titleId={RECORD_SHEET_TITLE_ID}
+        edit={{ onClick: state.edit }}
+        // TODO: 실제 삭제 API 연결
+        onDelete={(date) => void deleteRecord(date)}
+        play={state.justSaved}
+      />
+    );
+  }
+
   return (
     <TodayDone
       record={todayRecord}
       records={state.records}
       play={state.justSaved}
       onEdit={state.edit}
-      cardsOnly={inSheet}
     />
   );
 }

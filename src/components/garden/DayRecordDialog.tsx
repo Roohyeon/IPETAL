@@ -1,15 +1,17 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { ButtonLink } from "@/components/common/Button";
-import { CloseIcon, ImageIcon, PencilIcon, TrashIcon } from "@/components/common/Icons";
-import { KeywordTag } from "@/components/petal/KeywordChip";
-import { MoodIcon } from "@/components/petal/MoodIcon";
-import { moodLabel } from "@/data/moods";
-import { getRecommendations } from "@/data/recommendations";
-import { ROUTES } from "@/data/routes";
-import { formatLongDate, formatTime, monthOf } from "@/lib/date";
+import { useState } from "react";
+import { RecordSheet } from "@/components/common/RecordSheet";
+import {
+  draftToRecordInput,
+  isDraftReady,
+  recordToDraft,
+} from "@/components/home/member/recordDraft";
+import { TodayRecordForm } from "@/components/home/member/TodayRecordForm";
+import { formatLongDate } from "@/lib/date";
+import { saveRecord } from "@/lib/recordRepository";
 import type { DailyRecord } from "@/types/record";
+import { DayRecordContent } from "./DayRecordContent";
 import styles from "./DayRecordDialog.module.css";
 
 type DayRecordDialogProps = {
@@ -21,110 +23,72 @@ type DayRecordDialogProps = {
   onDelete: (date: string) => void;
 };
 
-/** 그날의 기록. 데스크톱·태블릿은 가운데 창, 모바일은 아래에서 올라오는 시트 */
-export function DayRecordDialog({ record, order, onClose, onDelete }: DayRecordDialogProps) {
-  const ref = useRef<HTMLDialogElement>(null);
+/** 그날의 기록을 그 자리(시트 안)에서 고친다. 저장하면 기록 보기로 돌아간다 */
+function DayRecordEdit({ record, onDone }: { record: DailyRecord; onDone: () => void }) {
+  const [draft, setDraft] = useState(() => recordToDraft(record));
+  const [saving, setSaving] = useState(false);
+  const ready = isDraftReady(draft);
 
-  useEffect(() => {
-    const dialog = ref.current;
-    if (!dialog) return;
-    if (record && !dialog.open) dialog.showModal();
-    if (!record && dialog.open) dialog.close();
-  }, [record]);
-
-  const remove = () => {
-    if (record && window.confirm("이 날의 꽃잎을 지울까요? 지운 꽃잎은 되돌릴 수 없어요.")) {
-      onDelete(record.date);
-    }
+  const save = async () => {
+    const input = draftToRecordInput(draft);
+    if (!ready || saving || !input) return;
+    setSaving(true);
+    // TODO: 실제 수정 API 연결 (데모 기록도 이 브라우저에 고친 내용으로 저장된다)
+    await saveRecord(input, record.date, record.recordedAt);
+    setSaving(false);
+    onDone();
   };
 
-  const recommendations = record ? getRecommendations(record.mood, record.keywords) : null;
+  return (
+    <>
+      <header className={`${styles.head} ${styles.editHead}`} data-sheet-handle="">
+        <div>
+          <h2 id="day-record-title" className={styles.title}>
+            {formatLongDate(record.date)}
+          </h2>
+          <p className={styles.meta}>이 날의 기록을 고쳐요</p>
+        </div>
+      </header>
+      <TodayRecordForm
+        draft={draft}
+        onChange={setDraft}
+        ready={ready}
+        saving={saving}
+        onSave={() => void save()}
+        submitLabel="수정한 꽃잎 저장하기"
+        readyText="준비됐어요. 고친 내용을 저장해 보세요."
+      />
+    </>
+  );
+}
+
+/** 그날의 기록: 하단 탭 + 기록 시트와 같은 시트로 아래에서 올라온다. 수정하기는 이 시트 안에서 바로 */
+export function DayRecordDialog({ record, order, onClose, onDelete }: DayRecordDialogProps) {
+  // 수정 중인 날짜 (다른 날을 열면 자동으로 보기 화면)
+  const [editingDate, setEditingDate] = useState<string | null>(null);
+  const editing = record !== null && editingDate === record.date;
 
   return (
-    <dialog
-      ref={ref}
-      className={styles.dialog}
-      aria-labelledby="day-record-title"
-      onClose={onClose}
-      // 바깥(어두운 배경)을 누르면 닫는다
-      onClick={(event) => {
-        if (event.target === event.currentTarget) onClose();
+    <RecordSheet
+      open={record !== null}
+      onClose={() => {
+        setEditingDate(null);
+        onClose();
       }}
+      today={record?.date ?? ""}
+      labelledBy="day-record-title"
     >
-      {record && recommendations ? (
-        <div className={styles.body}>
-          <span className={styles.grabber} aria-hidden="true" />
-          <header className={styles.head}>
-            <div>
-              <h2 id="day-record-title" className={styles.title}>
-                {formatLongDate(record.date)}
-              </h2>
-              <p className={styles.meta}>
-                {record.recordedAt ? `${formatTime(record.recordedAt)}에 기록 · ` : ""}
-                {monthOf(record.date)}월의 꽃 {order}번째 꽃잎
-              </p>
-            </div>
-            <button type="button" className={styles.close} onClick={onClose}>
-              <CloseIcon size={22} />
-              <span className="visually-hidden">닫기</span>
-            </button>
-          </header>
-
-          {/* TODO: 사진 기록이 생기면 실제 사진으로 교체 */}
-          <div className={styles.photo}>
-            <ImageIcon size={30} />
-            <span>사진 영역</span>
-          </div>
-
-          <h3 className={styles.label}>하루 느낌</h3>
-          <p className={styles.mood}>
-            <MoodIcon mood={record.mood} size={44} />
-            {moodLabel(record.mood)}
-          </p>
-
-          <h3 className={styles.label}>오늘 하루의 키워드</h3>
-          <ul className={styles.keywords}>
-            {record.keywords.map((keyword) => (
-              <li key={keyword}>
-                <KeywordTag label={keyword} className={styles.keyword} />
-              </li>
-            ))}
-          </ul>
-
-          {record.memo ? <p className={styles.memo}>“{record.memo}”</p> : null}
-
-          <section className={styles.fill} aria-labelledby="day-fill-title">
-            <p className={styles.fillLabel}>그날의 마음 채우기</p>
-            <h3 id="day-fill-title" className={styles.fillTitle}>
-              {recommendations.title}
-            </h3>
-            <p className={styles.fillMeta}>
-              {["고른 내용", ...record.keywords, moodLabel(record.mood)].join(" · ")}
-            </p>
-            <ul className={styles.recos}>
-              {recommendations.items.map((item) => (
-                <li key={item.title} className={styles.reco}>
-                  <span className={styles.recoTag}>{item.tag}</span>
-                  <h4 className={styles.recoTitle}>{item.title}</h4>
-                  <p className={styles.recoBody}>{item.description}</p>
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          <div className={styles.actions}>
-            {/* TODO: 지난 기록 수정 화면이 생기면 연결 (지금은 오늘 기록 카드로) */}
-            <ButtonLink href={ROUTES.todayRecord} variant="outline" className={styles.edit}>
-              <PencilIcon size={20} />
-              수정하기
-            </ButtonLink>
-            <button type="button" className={styles.delete} onClick={remove}>
-              <TrashIcon size={20} />
-              삭제
-            </button>
-          </div>
-        </div>
+      {record && editing ? (
+        <DayRecordEdit key={record.date} record={record} onDone={() => setEditingDate(null)} />
+      ) : record ? (
+        <DayRecordContent
+          record={record}
+          order={order}
+          titleId="day-record-title"
+          edit={{ onClick: () => setEditingDate(record.date) }}
+          onDelete={onDelete}
+        />
       ) : null}
-    </dialog>
+    </RecordSheet>
   );
 }
