@@ -3,7 +3,7 @@
 import { useGLTF } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import type { MotionValue } from "motion/react";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import * as THREE from "three";
 import { createDewMaterial, createPetalMaterial } from "./lotusMaterials";
@@ -29,6 +29,12 @@ type LotusSceneProps = {
   interactive: boolean;
   /** 모바일 등 작은 화면: 해상도를 낮춰 가볍게 */
   compact?: boolean;
+  /**
+   * true면 이 캔버스만의 모델 복사본을 쓴다.
+   * useGLTF는 모든 캔버스에 같은 장면 객체를 주는데, three.js 객체는 한 곳에만 붙을 수 있어
+   * 여러 캔버스가 같이 쓰면 마지막 캔버스에만 꽃이 보인다 (나의 정원처럼 여러 송이일 때 필요).
+   */
+  ownModel?: boolean;
   onReady: () => void;
 };
 
@@ -274,16 +280,30 @@ function budDropsOf(root: THREE.Object3D): THREE.InstancedMesh | null {
   return drops;
 }
 
+/** 공유 모델의 복사본 (모양·재질은 함께 쓰고 개화 상태만 따로). 다른 캔버스가 맺어 둔 물방울은 뺀다 */
+function cloneModel(source: THREE.Object3D): THREE.Object3D {
+  const copy = source.clone(true);
+  const drops: THREE.Object3D[] = [];
+  copy.traverse((object) => {
+    if ((object as THREE.InstancedMesh).isInstancedMesh) drops.push(object);
+  });
+  drops.forEach((object) => object.removeFromParent());
+  return copy;
+}
+
 function Lotus({
   bloom,
   orbit,
+  ownModel,
   onReady,
 }: {
   bloom: MotionValue<number>;
   orbit: OrbitController;
+  ownModel: boolean;
   onReady: () => void;
 }) {
-  const { scene } = useGLTF(MODEL_URL, false, true);
+  const { scene: shared } = useGLTF(MODEL_URL, false, true);
+  const scene = useMemo(() => (ownModel ? cloneModel(shared) : shared), [ownModel, shared]);
   const pivot = useRef<THREE.Group>(null);
   const model = useRef<THREE.Group>(null);
   const ready = useRef(false);
@@ -360,6 +380,7 @@ export default function LotusScene({
   active,
   interactive,
   compact,
+  ownModel = false,
   onReady,
 }: LotusSceneProps) {
   const [orbit] = useState(() => new OrbitController());
@@ -416,7 +437,7 @@ export default function LotusScene({
         <pointLight position={[0.12, 0.25, 0.22]} intensity={0.6} distance={1} color="#ffffff" />
         <pointLight position={[-0.15, 0.2, 0.18]} intensity={0.35} distance={1} color="#fff2f2" />
         <Suspense fallback={null}>
-          <Lotus bloom={bloom} orbit={orbit} onReady={onReady} />
+          <Lotus bloom={bloom} orbit={orbit} ownModel={ownModel} onReady={onReady} />
         </Suspense>
       </Canvas>
     </div>

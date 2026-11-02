@@ -28,8 +28,6 @@ type TodayDoneProps = {
   /** 방금 저장했으면 꽃잎 받기 연출 재생 */
   play: boolean;
   onEdit: () => void;
-  /** 기록 시트(하단 탭 +) 안: 카드(마음 채우기 + 나의 정원 버튼)만 보여준다 */
-  cardsOnly?: boolean;
 };
 
 /** 반딧불: 꽃잎 둘레를 둥둥 떠다니는 작은 빛 (위치 %, 크기 px, 주기·지연 초) */
@@ -289,7 +287,7 @@ function markIntroPlayed(date: string) {
  * 히어로(연못 + 연잎 위로 떨어지는 3D 꽃잎 + 반딧불) → '꽃잎을 얻었어요!' 반짝
  * → 이번 달 꽃잎 수(나왔다 사라짐) → 바위 안의 카드들 → 나의 정원 버튼
  */
-export function TodayDone({ record, records, play, onEdit, cardsOnly = false }: TodayDoneProps) {
+export function TodayDone({ record, records, play, onEdit }: TodayDoneProps) {
   const reduce = useReducedMotion();
   const animate = play && !reduce;
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -353,7 +351,7 @@ export function TodayDone({ record, records, play, onEdit, cardsOnly = false }: 
         role="region"
         className={styles.card}
         aria-labelledby="fill-title"
-        {...reveal(cardsOnly ? 0.2 : 1.8)}
+        {...reveal(1.8)}
       >
         <p className={styles.cardLabel}>오늘의 마음 채우기</p>
         <h2 id="fill-title" className={styles.cardTitle}>
@@ -390,16 +388,6 @@ export function TodayDone({ record, records, play, onEdit, cardsOnly = false }: 
       {record.keywords.length > 0 ? `, 키워드 ${record.keywords.join(", ")}` : ""}
     </h2>
   );
-
-  // 하단 탭 + 로 여는 기록 시트 안: 연못·점수 없이 카드만
-  if (cardsOnly) {
-    return (
-      <div className={styles.done}>
-        {resultHeading}
-        {cards}
-      </div>
-    );
-  }
 
   return (
     <div className={styles.done}>

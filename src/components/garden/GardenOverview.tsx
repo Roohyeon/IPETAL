@@ -1,17 +1,46 @@
 "use client";
 
+import { motion, useReducedMotion } from "motion/react";
+import Image from "next/image";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { TapIcon } from "@/components/common/Icons";
 import { Petal } from "@/components/petal/Petal";
 import { gardenMonthRoute } from "@/data/routes";
 import { monthKeyOf } from "@/lib/date";
 import { mergeRecords, useSavedRecords } from "@/lib/recordRepository";
+import { hasWebGL, useClientValue } from "@/lib/useClientValue";
+import { useMediaQuery } from "@/lib/useMediaQuery";
+import { useOverscrollPull } from "@/lib/useOverscrollPull";
 import type { DailyRecord } from "@/types/record";
+import { CurrentMonthJump } from "./CurrentMonthJump";
+import { PondWater } from "./PondWater";
+import { useTimeOfDayStyle } from "./timeOfDay";
 import { GardenLotus } from "./GardenLotus";
+import { GardenPads } from "./GardenPads";
 import { LilyPad } from "./LilyPad";
 import layout from "./layout.module.css";
 import styles from "./GardenOverview.module.css";
+
+/** 모바일 배경 그림 */
+const POND_BACKDROP = "/images/garden-pond2-illustration.webp";
+
+/** 반딧불: 정원 위를 둥둥 떠다니는 작은 빛 (화면 기준 위치 %, 크기 px, 주기·지연 초) */
+const FIREFLIES = [
+  { x: 10, y: 22, size: 7, duration: 8, delay: 0 },
+  { x: 86, y: 16, size: 6, duration: 9.5, delay: 1.4 },
+  { x: 72, y: 38, size: 8, duration: 10, delay: 0.6 },
+  { x: 18, y: 50, size: 6, duration: 8.5, delay: 2.6 },
+  { x: 92, y: 58, size: 7, duration: 9, delay: 3.2 },
+  { x: 40, y: 68, size: 5, duration: 7, delay: 1.9 },
+  { x: 8, y: 80, size: 7, duration: 10.5, delay: 0.9 },
+  { x: 64, y: 84, size: 6, duration: 8, delay: 2.2 },
+  { x: 52, y: 30, size: 5, duration: 7.5, delay: 4 },
+  { x: 30, y: 8, size: 6, duration: 9, delay: 1.1 },
+  { x: 78, y: 72, size: 7, duration: 8.5, delay: 3.6 },
+  { x: 24, y: 92, size: 6, duration: 9.5, delay: 2.9 },
+  { x: 88, y: 94, size: 5, duration: 7.5, delay: 0.4 },
+];
 
 /** 연잎 위 꽃잎의 기울기 (달마다 조금씩 다르게) */
 const PETAL_TILT = [-12, 48, 8, -40, -18, 62, 4, -34, 22, -46, 10, 58];
@@ -33,9 +62,66 @@ export function GardenOverview({ records: baseRecords, today }: GardenOverviewPr
     return { key, month: index + 1, petals };
   });
   const flowers = months.filter((month) => month.petals > 0).length;
+  const currentKey = monthKeyOf(today);
+  const currentRef = useRef<HTMLLIElement>(null);
+  const reduce = useReducedMotion();
+  // 모바일 배경: 지금 시각에 따라 아침·낮·저녁·밤 분위기
+  const timeOfDay = useTimeOfDayStyle();
+  // 모바일: 연잎·꽃잎을 3D로 (준비되기 전·WebGL이 없으면 2D 그림 그대로)
+  const gridRef = useRef<HTMLDivElement>(null);
+  const mobile = useMediaQuery("(max-width: 767px)");
+  const webgl = useClientValue(hasWebGL, false);
+  // WebGL이 없다고 확인된 기기만 2D 연잎을 보여준다 (서버·첫 렌더에서는 숨긴 채로)
+  const noWebgl = useClientValue(() => !hasWebGL(), false);
+  const [padsReady, setPadsReady] = useState(false);
+  const use3d = mobile && webgl;
+
+  // 3D가 끝내 준비되지 않아도(느린 기기·로딩 실패) 월 이름은 보이게
+  useEffect(() => {
+    if (!use3d) return;
+    const fallback = window.setTimeout(() => setPadsReady(true), 5000);
+    return () => window.clearTimeout(fallback);
+  }, [use3d]);
+  // 모바일: 페이지 끝에서 더 끌면 연잎들이 살짝 당겨진다
+  const pull = useOverscrollPull(null, mobile && !reduce);
 
   return (
-    <main className={layout.main}>
+    <main className={layout.main} style={timeOfDay}>
+      {/* 모바일 배경: 연못 그림 (화면에 고정). 같은 그림을 한 겹 더 반대로 흘려 물결이 일렁인다 */}
+      <div className={styles.backdrop} aria-hidden="true">
+        <Image
+          src={POND_BACKDROP}
+          alt=""
+          fill
+          sizes="100vw"
+          priority
+          className={styles.backdropImage}
+        />
+        <Image src={POND_BACKDROP} alt="" fill sizes="100vw" className={styles.backdropFlow} />
+        {/* 물결 일렁임 (WebGL). 준비되면 위 그림을 덮는다 */}
+        {use3d && !reduce ? <PondWater src={POND_BACKDROP} /> : null}
+        {/* 시간대 분위기: 물들이는 겹 + 빛을 더하는 겹 */}
+        <div className={styles.todMultiply} />
+        <div className={styles.todScreen} />
+        <div className={styles.fireflies}>
+          {FIREFLIES.map((f, i) => (
+            <span
+              key={i}
+              className={styles.firefly}
+              style={
+                {
+                  left: `${f.x}%`,
+                  top: `${f.y}%`,
+                  "--size": `${f.size}px`,
+                  "--duration": `${f.duration}s`,
+                  "--delay": `-${f.delay}s`,
+                } as React.CSSProperties
+              }
+            />
+          ))}
+        </div>
+      </div>
+
       <section aria-labelledby="garden-title" className={styles.board}>
         <div className={styles.intro}>
           <p className={styles.eyebrow}>My Garden</p>
@@ -47,54 +133,76 @@ export function GardenOverview({ records: baseRecords, today }: GardenOverviewPr
           </p>
         </div>
 
-        <ul className={styles.grid}>
-          {months.map(({ key, month, petals }) => {
-            const bloomed = petals > 0;
-            const visual = (
-              <>
-                <span className={styles.pond} aria-hidden="true">
-                  <LilyPad className={styles.pad} />
-                  {bloomed ? (
-                    <GardenLotus className={styles.lotus} />
-                  ) : (
-                    <span
-                      className={styles.petal}
-                      style={{ rotate: `${PETAL_TILT[month - 1]}deg` }}
-                    >
-                      <Petal mood="best" width={34} />
-                    </span>
-                  )}
-                </span>
-                <span className={styles.label}>{month}월</span>
-              </>
-            );
-
-            return (
-              <li key={key}>
-                {bloomed ? (
-                  <Link
-                    href={gardenMonthRoute(key)}
-                    className={`${styles.month} ${styles.bloomed}`}
-                    aria-label={`${month}월의 꽃, 꽃잎 ${petals}장. 달력 열기`}
+        <motion.div
+          ref={gridRef}
+          style={{ y: pull }}
+          className={[
+            styles.gridWrap,
+            use3d && padsReady ? styles.pads3dReady : "",
+            noWebgl ? styles.no3d : "",
+          ].join(" ")}
+        >
+          {use3d ? <GardenPads gridRef={gridRef} onReady={() => setPadsReady(true)} /> : null}
+          <ul className={styles.grid}>
+            {months.map(({ key, month, petals }) => {
+              const bloomed = petals > 0;
+              const current = key === currentKey;
+              const visual = (
+                <>
+                  <span
+                    className={styles.pond}
+                    aria-hidden="true"
+                    data-pond=""
+                    data-petal-tilt={bloomed ? undefined : PETAL_TILT[month - 1]}
+                    data-current={current ? "" : undefined}
                   >
-                    {visual}
-                  </Link>
-                ) : (
-                  <div className={styles.month}>
-                    {visual}
-                    <span className="visually-hidden">: 아직 피어난 꽃이 없어요</span>
-                  </div>
-                )}
-              </li>
-            );
-          })}
-        </ul>
+                    <LilyPad className={styles.pad} />
+                    {bloomed ? (
+                      <GardenLotus className={styles.lotus} bloomIn={mobile} />
+                    ) : (
+                      <span
+                        className={styles.petal}
+                        style={{ rotate: `${PETAL_TILT[month - 1]}deg` }}
+                      >
+                        <Petal mood="best" width={34} />
+                      </span>
+                    )}
+                  </span>
+                  <span className={styles.label}>{month}월</span>
+                </>
+              );
+
+              return (
+                <li key={key} ref={current ? currentRef : undefined}>
+                  {bloomed ? (
+                    <Link
+                      href={gardenMonthRoute(key)}
+                      className={`${styles.month} ${styles.bloomed}`}
+                      aria-label={`${month}월의 꽃, 꽃잎 ${petals}장. 달력 열기`}
+                    >
+                      {visual}
+                    </Link>
+                  ) : (
+                    <div className={styles.month}>
+                      {visual}
+                      <span className="visually-hidden">: 아직 피어난 꽃이 없어요</span>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </motion.div>
 
         <p className={styles.hint}>
           <TapIcon size={20} />
           꽃을 누르면 그 달의 달력이 열려요.
         </p>
       </section>
+
+      {mobile ? (
+        <CurrentMonthJump targetRef={currentRef} month={Number(currentKey.slice(5))} />
+      ) : null}
     </main>
   );
 }
