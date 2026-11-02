@@ -7,7 +7,6 @@ import { GUEST_SECTIONS, ROUTES } from "@/data/routes";
 import { UserIcon } from "./Icons";
 import { Logo } from "./Logo";
 import { MobileMenu } from "./MobileMenu";
-import { ProfileMenu } from "./ProfileMenu";
 import styles from "./Header.module.css";
 
 const MEMBER_NAV = [
@@ -136,7 +135,15 @@ export function Header({ variant }: { variant: "guest" | "member" }) {
                 </ul>
               </nav>
               <div className={styles.actions}>
-                <ProfileMenu className={styles.profile} />
+                {/* 사람 아이콘: 마이페이지 (로그아웃은 마이페이지에서) */}
+                <Link
+                  href={ROUTES.my}
+                  className={styles.profile}
+                  aria-current={pathname.startsWith("/my") ? "page" : undefined}
+                >
+                  <UserIcon size={24} />
+                  <span className="visually-hidden">마이페이지</span>
+                </Link>
               </div>
             </>
           )}

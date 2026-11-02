@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState, type ReactNode } from "react";
-import { ChevronLeftIcon, ChevronRightIcon, PlusIcon, TapIcon } from "@/components/common/Icons";
+import { ChevronLeftIcon, ChevronRightIcon, PlusIcon } from "@/components/common/Icons";
 import { MoodIcon } from "@/components/petal/MoodIcon";
 import { MOOD_OPTIONS, moodLabel } from "@/data/moods";
 import { gardenMonthRoute, ROUTES } from "@/data/routes";
@@ -11,6 +11,7 @@ import { deleteRecord, mergeRecords, useSavedRecords } from "@/lib/recordReposit
 import type { DailyRecord } from "@/types/record";
 import { useOpenRecordSheet } from "@/components/common/RecordSheet";
 import { DayRecordDialog } from "./DayRecordDialog";
+import { requestGardenFocus } from "./gardenFocus";
 import layout from "./layout.module.css";
 import styles from "./MonthCalendar.module.css";
 
@@ -60,12 +61,12 @@ export function MonthCalendar({ monthKey, initialRecords, today, firstMonth }: M
 
   return (
     <main className={layout.main}>
-      <Link href={ROUTES.garden} className={styles.back}>
+      {/* 정원으로 돌아가면 이번 달 쪽으로 스크롤된다 */}
+      <Link href={ROUTES.garden} className={styles.back} onClick={requestGardenFocus}>
         <ChevronLeftIcon size={18} />
         정원으로
       </Link>
       <h1 className={styles.title}>{month}월</h1>
-      <p className={styles.count}>꽃잎 {records.length}장</p>
 
       <section
         aria-label={`${year}년 ${month}월 달력`}
@@ -133,10 +134,22 @@ export function MonthCalendar({ monthKey, initialRecords, today, firstMonth }: M
             const future = date > today;
             return (
               <li key={date}>
-                <span className={`${styles.day} ${future ? styles.future : styles.empty}`}>
-                  <span className={styles.num}>{day}</span>
-                  {future ? null : <span className="visually-hidden">기록 없음</span>}
-                </span>
+                {future ? (
+                  <span className={`${styles.day} ${styles.future}`}>
+                    <span className={styles.num}>{day}</span>
+                  </span>
+                ) : (
+                  // 기록 없는 지난날: 눌러서 그날의 기록을 남긴다
+                  <button
+                    type="button"
+                    className={`${styles.day} ${styles.empty}`}
+                    onClick={() => setOpenDate(date)}
+                    aria-haspopup="dialog"
+                    aria-label={`${month}월 ${day}일, 기록 없음. 기록 남기기`}
+                  >
+                    <span className={styles.num}>{day}</span>
+                  </button>
+                )}
               </li>
             );
           })}
@@ -155,17 +168,16 @@ export function MonthCalendar({ monthKey, initialRecords, today, firstMonth }: M
             점선 칸 = 기록 없음
           </li>
         </ul>
-        <p className={styles.hint}>
-          <TapIcon size={18} />
-          날짜를 누르면 그날의 기록이 열려요.
-        </p>
       </section>
 
       <DayRecordDialog
+        date={openDate}
         record={openRecord}
         order={openOrder}
         onClose={() => setOpenDate(null)}
         onDelete={remove}
+        // 지웠던 날에 다시 남기면 다시 보이게
+        onSaved={(date) => setDeleted((list) => list.filter((item) => item !== date))}
       />
     </main>
   );

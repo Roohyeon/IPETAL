@@ -75,7 +75,11 @@ export function MobileTabBar({
           </Link>
         </li>
         <li>
-          <Link href={ROUTES.my} className={styles.item}>
+          <Link
+            href={ROUTES.my}
+            className={styles.item}
+            aria-current={current(pathname.startsWith("/my"))}
+          >
             <UserIcon size={26} />
             <span>마이</span>
           </Link>

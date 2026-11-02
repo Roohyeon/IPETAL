@@ -15,12 +15,6 @@
   line-height: 1.2;
 }
 
-.count {
-  margin-top: 4px;
-  font-size: 15px;
-  color: var(--color-text-sub);
-}
-
 .card {
   margin-top: 24px;
   padding: 18px 16px 22px;
@@ -128,10 +122,19 @@
   translate: 0 -2px;
 }
 
+/* 기록 없는 지난날: 눌러서 그날의 기록을 남길 수 있다 */
 .empty {
   border-style: dashed;
   border-color: #e7d9d6;
   background: transparent;
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease;
+}
+
+.empty:hover {
+  border-color: var(--color-border-strong);
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .future {
@@ -213,15 +216,6 @@
   border-radius: 3px;
 }
 
-.hint {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 16px;
-  font-size: 13px;
-  color: var(--color-text-sub);
-}
-
 @media (min-width: 768px) {
   .title {
     margin-top: 34px;
@@ -291,9 +285,6 @@
     font-size: 14px;
   }
 
-  .hint {
-    font-size: 14px;
-  }
 }
 
 @media (min-width: 1200px) {

@@ -14,6 +14,7 @@ import { useMediaQuery } from "@/lib/useMediaQuery";
 import { useOverscrollPull } from "@/lib/useOverscrollPull";
 import type { DailyRecord } from "@/types/record";
 import { CurrentMonthJump } from "./CurrentMonthJump";
+import { takeGardenFocus } from "./gardenFocus";
 import { useTimeOfDayStyle } from "./timeOfDay";
 import { GardenLotus } from "./GardenLotus";
 import { GardenPads } from "./GardenPads";
@@ -84,6 +85,21 @@ export function GardenOverview({ records: baseRecords, today }: GardenOverviewPr
     const fallback = window.setTimeout(() => setPadsReady(true), 5000);
     return () => window.clearTimeout(fallback);
   }, [use3d]);
+  // 달력에서 '정원으로' 돌아왔으면 이번 달이 화면 가운데 오도록 스크롤.
+  // 페이지 이동 직후 Next.js가 맨 위로 올리는 스크롤이 끝난 뒤에 한다.
+  // 표시는 한 번만 읽어 둔다 (개발 모드에서 효과가 두 번 돌아도 스크롤되게)
+  const focusRef = useRef<boolean | null>(null);
+  useEffect(() => {
+    focusRef.current ??= takeGardenFocus();
+    if (!focusRef.current) return;
+    const timer = window.setTimeout(() => {
+      focusRef.current = false;
+      const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      currentRef.current?.scrollIntoView({ block: "center", behavior: smooth ? "smooth" : "auto" });
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, []);
+
   // 모바일: 페이지 끝에서 더 끌면 연잎들이 살짝 당겨진다
   const pull = useOverscrollPull(null, mobile && !reduce);
 
