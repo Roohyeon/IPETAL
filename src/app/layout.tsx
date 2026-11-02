@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Caladea, Carlito, Noto_Sans_KR } from "next/font/google";
 import localFont from "next/font/local";
+import { MobileOnlyFrame } from "@/components/common/MobileOnlyFrame";
+import { MOBILE_ONLY, MOBILE_ONLY_SCRIPT } from "@/lib/mobileOnly";
 import "@/styles/globals.css";
 
 // 영문 본문 (Calibri와 같은 메트릭)
@@ -71,8 +73,16 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html
       lang="ko"
       className={`${carlito.variable} ${notoSansKr.variable} ${caladea.variable} ${gowunBatang.variable} ${zcool.variable} ${pinyon.variable}`}
+      suppressHydrationWarning
     >
-      <body>{children}</body>
+      {MOBILE_ONLY ? (
+        <head>
+          <script dangerouslySetInnerHTML={{ __html: MOBILE_ONLY_SCRIPT }} />
+        </head>
+      ) : null}
+      <body>
+        <MobileOnlyFrame>{children}</MobileOnlyFrame>
+      </body>
     </html>
   );
 }

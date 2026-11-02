@@ -1,0 +1,24 @@
+/* 넓은 화면에서 가운데 놓이는 모바일 폭 창 */
+.shell {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  display: flex;
+  justify-content: center;
+  background:
+    radial-gradient(1100px 700px at 50% 20%, rgba(255, 255, 255, 0.9), transparent 70%),
+    linear-gradient(180deg, #f7f2ec 0%, #f1e6e2 100%);
+  visibility: visible;
+}
+
+.frame {
+  display: block;
+  width: 100%;
+  max-width: 430px;
+  height: 100dvh;
+  border: 0;
+  background: var(--color-bg);
+  box-shadow:
+    0 0 0 1px rgba(47, 58, 54, 0.06),
+    0 30px 80px -30px rgba(70, 45, 45, 0.35);
+}

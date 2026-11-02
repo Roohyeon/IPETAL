@@ -28,6 +28,12 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* 임시 모바일 전용 보기 (src/lib/mobileOnly.ts): 넓은 화면에서는 모바일 창만 보이고 뒤 페이지는 감춘다 */
+html.mobile-only-framed body {
+  overflow: hidden;
+  visibility: hidden;
+}
+
 img,
 svg,
 video {
