@@ -29,6 +29,7 @@
 }
 
 .tabs {
+  position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
   padding: 4px;
@@ -42,6 +43,11 @@
   border: 1.5px solid transparent;
   font-size: 15px;
   color: var(--color-text-sub);
+}
+
+/* 미끄러지는 탭 바탕 (모바일에서만 보인다) */
+.tabIndicator {
+  display: none;
 }
 
 .tab[aria-pressed="true"] {
@@ -155,20 +161,47 @@
 }
 
 /* ---------- 막대 ---------- */
+/* 막대 홈: 안으로 살짝 파인 느낌 */
 .track {
   position: relative;
   display: block;
   height: 14px;
   border-radius: var(--radius-pill);
   background: #f6eceb;
+  box-shadow:
+    inset 0 1px 2px rgba(120, 80, 78, 0.14),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.7);
   overflow: hidden;
 }
 
+/* 막대: 위쪽 빛 반사 + 아래쪽 그늘로 도톰하게. 값이 바뀌면(활동 탭) 길이가 부드럽게 바뀐다 */
 .fillBar {
   position: absolute;
   inset: 0 auto 0 0;
   border-radius: inherit;
-  background: #e4b5b2;
+  background: linear-gradient(180deg, #f1cfcc 0%, #e4b5b2 48%, #d39d9a 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -2px 3px rgba(150, 80, 84, 0.18),
+    1px 0 3px rgba(170, 100, 104, 0.25);
+  transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 처음 보일 때 왼쪽에서 오른쪽으로 차오른다: 카드가 나타난 뒤(--stagger), 위 줄부터 차례로(--row) */
+@media (prefers-reduced-motion: no-preference) {
+  .fillBar {
+    animation: barGrow 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(var(--stagger, 0) * 140ms + 250ms + var(--row, 0) * 70ms);
+  }
+}
+
+@keyframes barGrow {
+  from {
+    clip-path: inset(0 100% 0 0 round 999px);
+  }
+  to {
+    clip-path: inset(0 0 0 0 round 999px);
+  }
 }
 
 .days {
@@ -297,6 +330,25 @@
   font-weight: 700;
 }
 
+/* 고른 활동: 따옴표 + 굵게 */
+.panelKeyword {
+  display: inline-block;
+  font-weight: 800;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .panelKeyword {
+    animation: keywordPop 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+@keyframes keywordPop {
+  from {
+    opacity: 0;
+    scale: 0.9;
+  }
+}
+
 .keywordPanel .moodRows {
   margin-top: 14px;
 }
@@ -416,19 +468,7 @@
   background: var(--color-surface);
 }
 
-.insightIcon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--color-disabled-bg);
-  color: var(--color-text-sub);
-}
-
 .insightTitle {
-  margin-top: 16px;
   font-family: var(--font-serif);
   font-size: 18px;
   font-weight: 700;
@@ -764,5 +804,73 @@
 
   .insightTitle {
     font-size: 19px;
+  }
+}
+
+/* ── 모바일 ─────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .eyebrow {
+    color: #c4a46b;
+  }
+
+  /* 기간 탭: 테두리 없이, 고른 탭 뒤의 흰 바탕이 주간 ↔ 월간을 미끄러지듯 옮겨 간다 */
+  .tabIndicator {
+    display: block;
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    left: 4px;
+    width: calc(50% - 4px);
+    border-radius: 11px;
+    background: var(--color-white);
+    box-shadow: 0 2px 8px rgba(47, 58, 54, 0.08);
+    transition: translate 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .tabs[data-mode="month"] .tabIndicator {
+    translate: 100% 0;
+  }
+
+  .tab {
+    position: relative;
+    z-index: 1;
+    transition: color 0.25s ease;
+  }
+
+  .tab[aria-pressed="true"] {
+    border-color: transparent;
+    background: transparent;
+  }
+
+  /* 모인 꽃잎·남긴 키워드 수는 모바일에서 뺀다 */
+  .stats {
+    display: none;
+  }
+
+  /*
+   * 카드: 반투명 유리.
+   * :is(section)으로 공통 유리(layout.glass)보다 우선하게 한다
+   */
+  .card:is(section) {
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.42);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    backdrop-filter: blur(16px) saturate(140%);
+    box-shadow: 0 8px 24px rgba(169, 112, 107, 0.08);
+  }
+}
+
+/* 카드가 시간차를 두고 하나씩 떠오른다 (--stagger 순서, 움직임 줄이기면 바로) */
+@media (max-width: 767px) and (prefers-reduced-motion: no-preference) {
+  .card {
+    animation: patternCardIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(var(--stagger, 0) * 140ms);
+  }
+}
+
+@keyframes patternCardIn {
+  from {
+    opacity: 0;
+    translate: 0 16px;
   }
 }

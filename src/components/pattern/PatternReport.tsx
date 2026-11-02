@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import { Button, ButtonLink, TextLink } from "@/components/common/Button";
 import { useOpenRecordSheet } from "@/components/common/RecordSheet";
 import {
@@ -8,7 +8,6 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   InfoIcon,
-  LeafIcon,
   LockIcon,
   StarIcon,
 } from "@/components/common/Icons";
@@ -37,6 +36,9 @@ import {
 import type { DailyRecord } from "@/types/record";
 import styles from "./PatternReport.module.css";
 
+/** 카드가 시간차를 두고 하나씩 나타나는 순서 (모바일, CSS --stagger) */
+const stagger = (order: number) => ({ "--stagger": order }) as CSSProperties;
+
 /** 상위 몇 개 키워드를 막대·표로 보여줄지 */
 const TOP_KEYWORDS = 5;
 
@@ -59,7 +61,8 @@ export function PatternReport({ records: baseRecords, today }: PatternReportProp
   const hasPrev = getPeriod(mode, offset + 1, today).end >= earliest;
   const locked = records.length < PATTERN_UNLOCK_COUNT;
   const total = keywordTotal(inPeriod);
-  const nextMonth = (monthOf(today) % 12) + 1;
+  // 오늘 남기는 꽃잎은 이번 달 꽃에 담긴다
+  const month = monthOf(today);
 
   const changeMode = (next: PeriodMode) => {
     setMode(next);
@@ -75,7 +78,9 @@ export function PatternReport({ records: baseRecords, today }: PatternReportProp
       </header>
 
       <div className={styles.toolbar}>
-        <div className={styles.tabs} role="group" aria-label="기간 단위">
+        <div className={styles.tabs} role="group" aria-label="기간 단위" data-mode={mode}>
+          {/* 고른 탭 뒤의 흰 바탕: 주간 ↔ 월간 사이를 미끄러지듯 옮겨 간다 (모바일) */}
+          <span className={styles.tabIndicator} aria-hidden="true" />
           {(["week", "month"] as const).map((value) => (
             <button
               key={value}
@@ -128,9 +133,9 @@ export function PatternReport({ records: baseRecords, today }: PatternReportProp
       </ul>
 
       {locked ? (
-        <LockedReport records={records} today={today} scope={period.scope} nextMonth={nextMonth} />
+        <LockedReport records={records} today={today} scope={period.scope} />
       ) : (
-        <Report records={inPeriod} all={records} scope={period.scope} nextMonth={nextMonth} />
+        <Report records={inPeriod} all={records} scope={period.scope} month={month} />
       )}
     </main>
   );
@@ -148,10 +153,14 @@ function SectionHead({ id, title, sub }: { id: string; title: string; sub: strin
   );
 }
 
-function Bar({ value, max }: { value: number; max: number }) {
+/** 막대: 처음 보일 때 왼쪽에서 오른쪽으로 차오른다 (row = 위에서 몇 번째 줄인지, 차례로 차오르게) */
+function Bar({ value, max, row = 0 }: { value: number; max: number; row?: number }) {
   return (
     <span className={styles.track} aria-hidden="true">
-      <span className={styles.fillBar} style={{ width: `${max ? (value / max) * 100 : 0}%` }} />
+      <span
+        className={styles.fillBar}
+        style={{ width: `${max ? (value / max) * 100 : 0}%`, "--row": row } as CSSProperties}
+      />
     </span>
   );
 }
@@ -171,7 +180,7 @@ function KeywordRows({
         <li key={keyword} className={styles.keywordRow}>
           <span className={styles.rank}>{start + index + 1}</span>
           <span className={styles.keywordName}>{keyword}</span>
-          <Bar value={days} max={max} />
+          <Bar value={days} max={max} row={index} />
           <span className={styles.days}>{days}일</span>
         </li>
       ))}
@@ -184,13 +193,13 @@ function MoodRows({ records }: { records: DailyRecord[] }) {
   const max = Math.max(...Object.values(counts));
   return (
     <ul className={styles.moodRows}>
-      {MOOD_OPTIONS.map((option) => (
+      {MOOD_OPTIONS.map((option, index) => (
         <li key={option.value} className={styles.moodRow}>
           <span className={styles.moodName}>
             <Petal mood={option.value} width={12} sparkle={false} />
             {option.label}
           </span>
-          <Bar value={counts[option.value]} max={max} />
+          <Bar value={counts[option.value]} max={max} row={index} />
           <span className={styles.days}>{counts[option.value]}일</span>
         </li>
       ))}
@@ -221,10 +230,11 @@ function RecordButton({
   );
 }
 
-function CtaBox({ nextMonth }: { nextMonth: number }) {
+/** 이번 달 꽃에 꽃잎 더 담기 (오늘 남기는 꽃잎은 이번 달 꽃에 담긴다) */
+function CtaBox({ month }: { month: number }) {
   return (
     <div className={styles.cta}>
-      <p className={styles.ctaText}>{nextMonth}월의 꽃에는 어떤 꽃잎을 더 담고 싶나요?</p>
+      <p className={styles.ctaText}>{month}월의 꽃에는 어떤 꽃잎을 더 담고 싶나요?</p>
       <RecordButton variant="outline" className={styles.ctaButton} />
     </div>
   );
@@ -234,10 +244,11 @@ type ReportProps = {
   records: DailyRecord[];
   all: DailyRecord[];
   scope: string;
-  nextMonth: number;
+  /** 이번 달 */
+  month: number;
 };
 
-function Report({ records, all, scope, nextMonth }: ReportProps) {
+function Report({ records, all, scope, month }: ReportProps) {
   const [showMore, setShowMore] = useState(false);
   const keywords = countKeywords(records);
   const top = keywords.slice(0, TOP_KEYWORDS);
@@ -248,10 +259,10 @@ function Report({ records, all, scope, nextMonth }: ReportProps) {
 
   if (records.length === 0) {
     return (
-      <section className={`${layout.glass} ${styles.card} ${styles.emptyCard}`}>
+      <section className={`${layout.glass} ${styles.card} ${styles.emptyCard}`} style={stagger(0)}>
         <p className={styles.emptyTitle}>{scope}에는 남긴 꽃잎이 없어요.</p>
         <p className={styles.cardSub}>다른 기간을 고르거나, 오늘의 꽃잎을 남겨보세요.</p>
-        <CtaBox nextMonth={nextMonth} />
+        <CtaBox month={month} />
       </section>
     );
   }
@@ -259,7 +270,11 @@ function Report({ records, all, scope, nextMonth }: ReportProps) {
   return (
     <>
       <div className={styles.pair}>
-        <section aria-labelledby="pattern-keywords" className={`${layout.glass} ${styles.card}`}>
+        <section
+          aria-labelledby="pattern-keywords"
+          style={stagger(0)}
+          className={`${layout.glass} ${styles.card}`}
+        >
           <SectionHead
             id="pattern-keywords"
             title="자주 남긴 키워드"
@@ -285,7 +300,11 @@ function Report({ records, all, scope, nextMonth }: ReportProps) {
           ) : null}
         </section>
 
-        <section aria-labelledby="pattern-moods" className={`${layout.glass} ${styles.card}`}>
+        <section
+          aria-labelledby="pattern-moods"
+          style={stagger(1)}
+          className={`${layout.glass} ${styles.card}`}
+        >
           <SectionHead
             id="pattern-moods"
             title={`${scope}의 기분`}
@@ -301,7 +320,11 @@ function Report({ records, all, scope, nextMonth }: ReportProps) {
         </section>
       </div>
 
-      <section aria-labelledby="pattern-matrix" className={`${layout.glass} ${styles.card}`}>
+      <section
+        aria-labelledby="pattern-matrix"
+        style={stagger(2)}
+        className={`${layout.glass} ${styles.card}`}
+      >
         <SectionHead
           id="pattern-matrix"
           title="어떤 활동이 어떤 기분과 함께했을까?"
@@ -314,7 +337,11 @@ function Report({ records, all, scope, nextMonth }: ReportProps) {
         <MoodMatrix records={records} keywords={top} />
       </section>
 
-      <section aria-labelledby="pattern-review" className={`${layout.glass} ${styles.card}`}>
+      <section
+        aria-labelledby="pattern-review"
+        style={stagger(3)}
+        className={`${layout.glass} ${styles.card}`}
+      >
         <SectionHead
           id="pattern-review"
           title={`${scope} 돌아보기`}
@@ -324,9 +351,6 @@ function Report({ records, all, scope, nextMonth }: ReportProps) {
           <ul className={styles.insights}>
             {insights.map((insight) => (
               <li key={insight.title} className={styles.insight}>
-                <span className={styles.insightIcon} aria-hidden="true">
-                  <LeafIcon size={18} />
-                </span>
                 <p className={styles.insightTitle}>{insight.title}</p>
                 <p className={styles.insightBasis}>
                   <strong>근거:</strong> {insight.basis}
@@ -339,7 +363,7 @@ function Report({ records, all, scope, nextMonth }: ReportProps) {
             아직 눈에 띄는 모습이 없어요. 꽃잎이 더 모이면 알려드릴게요.
           </p>
         )}
-        <CtaBox nextMonth={nextMonth} />
+        <CtaBox month={month} />
       </section>
     </>
   );
@@ -423,7 +447,10 @@ function MoodMatrix({ records, keywords }: { records: DailyRecord[]; keywords: K
           </div>
           <div className={styles.keywordPanel} role="tabpanel">
             <p className={styles.panelTitle}>
-              {current.keyword}
+              {/* 고른 활동을 강조 (바꿀 때마다 살짝 톡 나타난다) */}
+              <strong key={current.keyword} className={styles.panelKeyword}>
+                “{current.keyword}”
+              </strong>
               {particle(current.keyword, "을/를")} 남긴 {current.days}일의 기분
             </p>
             <MoodRows
@@ -440,11 +467,10 @@ type LockedReportProps = {
   records: DailyRecord[];
   today: string;
   scope: string;
-  nextMonth: number;
 };
 
 /** 꽃잎이 7장보다 적을 때: 진행도 + 흐릿한 미리보기 */
-function LockedReport({ records, today, scope, nextMonth }: LockedReportProps) {
+function LockedReport({ records, today, scope }: LockedReportProps) {
   const remaining = PATTERN_UNLOCK_COUNT - records.length;
   const keywords = countKeywords(records);
   const month = monthOf(today);
@@ -461,6 +487,7 @@ function LockedReport({ records, today, scope, nextMonth }: LockedReportProps) {
     <>
       <section
         aria-labelledby="pattern-locked"
+        style={stagger(0)}
         className={`${layout.glass} ${styles.card} ${styles.progressCard}`}
       >
         <MonthFlower
@@ -501,7 +528,11 @@ function LockedReport({ records, today, scope, nextMonth }: LockedReportProps) {
       </section>
 
       <div className={styles.pair}>
-        <section aria-labelledby="locked-keywords" className={`${layout.glass} ${styles.card}`}>
+        <section
+          aria-labelledby="locked-keywords"
+          style={stagger(1)}
+          className={`${layout.glass} ${styles.card}`}
+        >
           <SectionHead
             id="locked-keywords"
             title="자주 남긴 키워드"
@@ -534,7 +565,11 @@ function LockedReport({ records, today, scope, nextMonth }: LockedReportProps) {
           </div>
         </section>
 
-        <section aria-labelledby="locked-moods" className={`${layout.glass} ${styles.card}`}>
+        <section
+          aria-labelledby="locked-moods"
+          style={stagger(2)}
+          className={`${layout.glass} ${styles.card}`}
+        >
           <SectionHead
             id="locked-moods"
             title={`${scope}의 기분`}
@@ -555,7 +590,11 @@ function LockedReport({ records, today, scope, nextMonth }: LockedReportProps) {
         </section>
       </div>
 
-      <section aria-labelledby="locked-matrix" className={`${layout.glass} ${styles.card}`}>
+      <section
+        aria-labelledby="locked-matrix"
+        style={stagger(3)}
+        className={`${layout.glass} ${styles.card}`}
+      >
         <SectionHead
           id="locked-matrix"
           title="어떤 활동이 어떤 기분과 함께했을까?"
@@ -573,7 +612,11 @@ function LockedReport({ records, today, scope, nextMonth }: LockedReportProps) {
         </div>
       </section>
 
-      <section aria-labelledby="locked-review" className={`${layout.glass} ${styles.card}`}>
+      <section
+        aria-labelledby="locked-review"
+        style={stagger(4)}
+        className={`${layout.glass} ${styles.card}`}
+      >
         <SectionHead
           id="locked-review"
           title={`${scope} 돌아보기`}
@@ -589,7 +632,7 @@ function LockedReport({ records, today, scope, nextMonth }: LockedReportProps) {
           ))}
           {lockPill}
         </div>
-        <CtaBox nextMonth={nextMonth} />
+        <CtaBox month={month} />
       </section>
     </>
   );
