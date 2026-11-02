@@ -75,6 +75,22 @@ export async function saveTodayRecord(
   return record;
 }
 
+/** 지난 날짜의 기록 수정 (기록한 시각은 그대로 둔다) */
+export async function saveRecord(
+  input: Omit<DailyRecord, "date" | "recordedAt">,
+  date: string,
+  recordedAt?: string,
+): Promise<DailyRecord> {
+  await delay(250);
+  const record: DailyRecord = {
+    ...input,
+    date,
+    ...(recordedAt ? { recordedAt } : {}),
+  };
+  write([record, ...read().filter((item) => item.date !== date)]);
+  return record;
+}
+
 export async function deleteRecord(date: string): Promise<void> {
   write(read().filter((item) => item.date !== date));
 }

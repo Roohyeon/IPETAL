@@ -1,5 +1,12 @@
-/* 모바일 배경: 흐린 연못 그림. 화면에 고정되고, 헤더·하단 탭·본문 아래에 깔린다 */
-/* 화면에 고정 (스크롤해도 그대로) */
+/*
+ * 나의 정원 (GardenOverview)
+ * 1. 모바일 배경   2. 정원 카드   3. 열두 달 칸   4. 안내 문구   5. 이번 달로 이동 버튼
+ * 6. 모바일        7. 태블릿·데스크톱             8. 애니메이션
+ */
+
+/* ── 1. 모바일 배경 (768px 이상에서는 숨김) ─────────────────────────── */
+
+/* 화면에 고정된 연못. 헤더·하단 탭·본문 아래에 깔린다 */
 .backdrop {
   position: fixed;
   inset: 0;
@@ -8,53 +15,28 @@
   isolation: isolate;
 }
 
-.backdropImage,
-.backdropFlow {
-  object-fit: cover;
-  filter: blur(1.5px);
-}
-
-/* 가장자리가 비치지 않게 살짝 키운다 (흐르는 만큼 여유) */
+/*
+ * 연못 그림: 위쪽 기준으로 키워 아래쪽 큰 연잎은 화면 밖으로, 밝고 맑은 하늘빛 청록.
+ * 스크롤·끝 당김에 살짝 따라 움직인다 (--bg-shift는 GardenOverview가 넣는다).
+ * -12px: 아래로 당겨져도 그림 위 끝이 드러나지 않게 미리 올려 둔 여유
+ */
 .backdropImage {
-  scale: 1.05;
+  object-fit: cover;
+  object-position: center top;
+  transform-origin: center top;
+  scale: 1.45;
+  translate: 0 calc(-12px + var(--bg-shift, 0px));
+  filter: blur(2px) brightness(1.16) saturate(1.18) hue-rotate(8deg);
 }
 
-/* 물결 겹: 같은 그림을 조금 더 키워 은은하게 겹치고, 반대 방향으로 흘린다 */
-.backdropFlow {
-  scale: 1.1;
-  opacity: 0.22;
-  mix-blend-mode: soft-light;
-}
-
-/* 물 흐르는 효과: 아주 천천히 살짝 (움직임 줄이기 설정이면 멈춤) */
-@media (prefers-reduced-motion: no-preference) {
-  .backdropImage {
-    animation: pondDrift 18s ease-in-out infinite alternate;
-  }
-
-  .backdropFlow {
-    animation: pondFlow 11s ease-in-out infinite alternate;
-  }
-}
-
-/* 물결 일렁임 (WebGL 셰이더): 준비되면 서서히 나타나 정지 그림을 덮는다 */
-.water {
+/* 흰빛: 연못 색에 흰색을 고르게 한 겹 */
+.whiteWash {
   position: absolute;
   inset: 0;
-  opacity: 0;
-  transition: opacity 0.8s ease;
+  background: rgba(255, 255, 255, 0.22);
 }
 
-.water canvas {
-  scale: 1.03;
-  filter: blur(1.5px);
-}
-
-.waterReady {
-  opacity: 1;
-}
-
-/* 시간대 분위기 (timeOfDay.ts): 1분마다 바뀌는 값이 서서히 넘어가도록 */
+/* 시간대 분위기 (timeOfDay.ts): 물들이는 겹 + 빛을 더하는 겹. 1분마다 바뀌는 값이 서서히 넘어간다 */
 .todMultiply,
 .todScreen {
   position: absolute;
@@ -76,11 +58,25 @@
   mix-blend-mode: screen;
 }
 
-/* 반딧불: 정원 위를 둥둥 떠다니는 작은 빛 (홈 기록 완료 화면과 같은 모양) */
+/* 햇살: 왼쪽 위에서 수면에 부드럽게 비친다 */
+.sunlight {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      70% 45% at 18% 0%,
+      rgba(255, 249, 232, 0.5),
+      rgba(255, 246, 225, 0.18) 55%,
+      rgba(255, 246, 225, 0) 100%
+    ),
+    linear-gradient(160deg, rgba(255, 250, 238, 0.16), rgba(255, 250, 238, 0) 60%);
+  mix-blend-mode: screen;
+}
+
+/* 반딧불: 둥둥 떠다니는 작은 빛 (홈 기록 완료 화면과 같은 모양), 밤일수록 또렷하게 */
 .fireflies {
   position: absolute;
   inset: 0;
-  /* 밤일수록 또렷하게 */
   opacity: var(--tod-fireflies, 0.65);
   transition: opacity 2s ease;
 }
@@ -97,54 +93,7 @@
   opacity: 0.6;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .firefly {
-    animation:
-      gardenFireflyDrift var(--duration) ease-in-out var(--delay) infinite,
-      gardenFireflyGlow calc(var(--duration) / 3) ease-in-out var(--delay) infinite alternate;
-  }
-}
-
-@keyframes gardenFireflyDrift {
-  0%,
-  100% {
-    transform: translate(0, 0);
-  }
-  25% {
-    transform: translate(14px, -18px);
-  }
-  50% {
-    transform: translate(-8px, -30px);
-  }
-  75% {
-    transform: translate(-16px, -10px);
-  }
-}
-
-@keyframes gardenFireflyGlow {
-  from {
-    opacity: 0.25;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes pondDrift {
-  to {
-    translate: -6px 10px;
-  }
-}
-
-@keyframes pondFlow {
-  from {
-    translate: 8px -6px;
-  }
-
-  to {
-    translate: -10px 14px;
-  }
-}
+/* ── 2. 정원 카드 ─────────────────────────────────────────────────── */
 
 .board {
   position: relative;
@@ -189,20 +138,21 @@
   color: var(--color-text);
 }
 
-/* 격자 + (모바일) 뒤에 깔리는 3D 연잎 캔버스 */
+/* ── 3. 열두 달 칸 ────────────────────────────────────────────────── */
+
+/* 격자 + (모바일) 그 뒤에 깔리는 3D 연잎 캔버스 */
 .gridWrap {
   position: relative;
   margin-top: 30px;
 }
 
-/* 맨 윗줄 꽃잎 끝이 잘리지 않게 위로, 이번 달 금빛이 잘리지 않게 좌우로(화면 끝까지) 여유를 둔다 */
+/* 맨 윗줄 꽃잎 끝(위)과 이번 달 금빛(좌우, 화면 끝까지)이 잘리지 않게 여유를 둔다 */
 .pads3d {
   position: absolute;
   inset: -48px -20px 0;
   z-index: 0;
   pointer-events: none;
 }
-
 
 .grid {
   position: relative;
@@ -227,6 +177,7 @@
   aspect-ratio: 240 / 160;
 }
 
+/* 2D 연잎·꽃잎 (태블릿·데스크톱, 모바일에서 WebGL이 없을 때) */
 .pad {
   position: absolute;
   inset: 0;
@@ -285,6 +236,8 @@
   outline-offset: 4px;
 }
 
+/* ── 4. 안내 문구 ─────────────────────────────────────────────────── */
+
 .hint {
   display: flex;
   align-items: center;
@@ -296,9 +249,39 @@
   color: var(--color-text);
 }
 
-/* 모바일: 반투명 카드 (뒤의 연못 배경이 비쳐 보인다) */
-/* ── 모바일 ── */
+/* ── 5. 이번 달로 이동 버튼 (모바일에서만 그린다): 하단 탭 바로 위 오른쪽 ── */
+
+.jump {
+  position: fixed;
+  right: 16px;
+  bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 16px);
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: rgba(253, 252, 251, 0.85);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 6px 18px rgba(47, 58, 54, 0.18);
+  color: var(--color-text);
+}
+
+.jumpUp {
+  rotate: 180deg;
+}
+
+/* ── 6. 모바일 ────────────────────────────────────────────────────── */
+
 @media (max-width: 767px) {
+  /* 페이지 끝의 기본 튕김은 끄고, 살짝 당겨지는 느낌은 useOverscrollPull이 낸다 */
+  :global(html):has(.backdrop) {
+    overscroll-behavior-y: none;
+  }
+
   /* 카드 틀 없이 연못 배경 위에 바로 */
   .board {
     border: none;
@@ -307,38 +290,16 @@
     backdrop-filter: none;
   }
 
-  /* 2D 연잎·꽃잎은 처음부터 숨기고 3D가 준비되면 서서히 나타난다
-     (새로고침해도 2D 그림이 먼저 보이지 않게. WebGL이 없는 기기만 2D) */
-  .gridWrap:not(.no3d) .pad,
-  .gridWrap:not(.no3d) .petal {
-    visibility: hidden;
-  }
-
-  /* 연꽃이 3D 연잎 한가운데(칸 높이의 57.5%)에 앉도록: 연잎 둘레가 보이게 조금 작게,
-     꽃 중심은 연잎 중심보다 살짝 위 (꽃받침이 연잎 가운데에 닿게) */
-  .lotus {
-    /* 크기를 바꿀 때 꽃 중심이 그대로 있도록: bottom = (0.334 - 0.4 × width비율) ÷ 0.667 */
-    bottom: -7.5%;
-    width: 96%;
-  }
-
-  /* 연잎·연꽃도 시간대에 맞춰 (밤에는 조금 어둡게) */
-  .pads3d canvas,
-  .lotus {
-    filter: brightness(var(--tod-scene, 1));
-    transition: filter 2s ease;
-  }
-
-  /* 월 이름도 3D 연잎과 함께 나타난다 (글자만 먼저 보이지 않게) */
-  .pads3d,
-  .gridWrap:not(.no3d) .label {
-    opacity: 0;
-    transition: opacity 0.6s ease;
-  }
-
-  .pads3dReady .pads3d,
-  .gridWrap.pads3dReady .label {
-    opacity: 1;
+  /* 제목 카드: 화면 위에 고정(연잎들만 그 아래로 지나간다). 아래는 연꽃잎 분홍, 위로 갈수록 투명한 유리 */
+  .intro {
+    position: sticky;
+    top: calc(var(--header-h) + 12px);
+    z-index: 2;
+    border: none;
+    background: linear-gradient(360deg, #f2d9d8 7%, rgba(253, 248, 247, 0.3) 59%);
+    box-shadow: 0 4px 13px #f2d9d8;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
   }
 
   /* 징검다리: 한 줄로 늘어선 연잎이 좌우로 굽이치며 이어진다 */
@@ -368,94 +329,73 @@
     margin-left: 50%;
   }
 
+  /* 2D 연잎·꽃잎은 처음부터 숨긴다 (새로고침해도 먼저 보이지 않게. WebGL이 없는 기기만 2D) */
+  .gridWrap:not(.no3d) .pad,
+  .gridWrap:not(.no3d) .petal {
+    visibility: hidden;
+  }
+
+  /* 3D 연잎과 월 이름은 준비되면 함께 서서히 나타난다 */
+  .pads3d,
+  .gridWrap:not(.no3d) .label {
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+
+  .pads3dReady .pads3d,
+  .gridWrap.pads3dReady .label {
+    opacity: 1;
+  }
+
+  /*
+   * 연꽃이 3D 연잎 한가운데(칸 높이의 57.5%)에 앉도록.
+   * 크기를 바꿔도 꽃 중심이 그대로 있게: bottom = (0.334 - 0.4 × width비율) ÷ 0.667
+   */
+  .lotus {
+    bottom: -7.5%;
+    width: 96%;
+  }
+
+  /* 제목 카드 글씨 */
+  .eyebrow {
+    color: #c4a46b;
+  }
+
+  .title,
+  .summary {
+    color: var(--color-white);
+  }
+
   .label,
   .bloomed {
     color: var(--color-white);
   }
 
-  /* 홈의 '꽃잎을 얻었어요!'와 같은 색 + 뒤에 은은한 흰빛 */
   .hint {
-    position: relative;
-    isolation: isolate;
     margin-top: 50px;
     font-size: 20px;
     font-weight: 500;
-    color: #ffd677;
+    color: #ffe5a7;
   }
+}
 
-  .hint::before {
-    content: "";
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    z-index: -1;
-    width: min(340px, 92%);
-    height: 64px;
-    translate: -50% -50%;
-    border-radius: 50%;
-    background: radial-gradient(
-      closest-side,
-      rgba(255, 255, 255, 0.6),
-      rgba(255, 255, 255, 0.25) 55%,
-      rgba(255, 255, 255, 0)
-    );
-    filter: blur(6px);
-    pointer-events: none;
-  }
-
-  /* 제목 카드는 화면 위에 고정, 연잎들만 그 아래로 지나간다 */
-  .intro {
-    position: sticky;
-    top: calc(var(--header-h) + 12px);
-    z-index: 2;
-  }
-
-  /* 페이지 끝의 기본 튕김은 끄고, 살짝 당겨지는 느낌은 useOverscrollPull이 낸다 */
-  :global(html):has(.backdrop) {
-    overscroll-behavior-y: none;
+/* 움직임 (움직임 줄이기 설정이면 모두 멈춘다) */
+@media (prefers-reduced-motion: no-preference) {
+  .firefly {
+    animation:
+      gardenFireflyDrift var(--duration) ease-in-out var(--delay) infinite,
+      gardenFireflyGlow calc(var(--duration) / 3) ease-in-out var(--delay) infinite alternate;
   }
 }
 
 @media (max-width: 767px) and (prefers-reduced-motion: no-preference) {
-  .hint::before {
-    animation: hintGlow 3.2s ease-in-out infinite alternate;
+  /* 안내 문구: 위아래로만 살살 */
+  .hint {
+    animation: hintFloat 4.2s ease-in-out infinite;
   }
 }
 
-@keyframes hintGlow {
-  from {
-    opacity: 0.55;
-    scale: 0.94;
-  }
-  to {
-    opacity: 1;
-    scale: 1.04;
-  }
-}
-
-/* 이번 달로 이동 버튼 (모바일): 하단 탭 바로 위 오른쪽 */
-.jump {
-  position: fixed;
-  right: 16px;
-  bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 16px);
-  z-index: 30;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  background: rgba(253, 252, 251, 0.85);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-  box-shadow: 0 6px 18px rgba(47, 58, 54, 0.18);
-  color: var(--color-text);
-}
-
-.jumpUp {
-  rotate: 180deg;
-}
+/* ── 7. 태블릿·데스크톱 ───────────────────────────────────────────── */
 
 @media (min-width: 768px) {
   .backdrop {
@@ -501,7 +441,6 @@
   }
 
   .intro {
-    max-width: 420px;
     margin: 0 52px;
     padding: 32px 34px 30px;
   }
@@ -531,5 +470,42 @@
   .hint {
     margin-top: 48px;
     font-size: 15px;
+  }
+}
+
+/* ── 8. 애니메이션 ────────────────────────────────────────────────── */
+
+@keyframes gardenFireflyDrift {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(14px, -18px);
+  }
+  50% {
+    transform: translate(-8px, -30px);
+  }
+  75% {
+    transform: translate(-16px, -10px);
+  }
+}
+
+@keyframes gardenFireflyGlow {
+  from {
+    opacity: 0.25;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes hintFloat {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -6px;
   }
 }

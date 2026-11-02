@@ -1,17 +1,15 @@
 "use client";
 
 import { useMemo, useState, useSyncExternalStore } from "react";
-import { KEYWORD_MAX, KEYWORD_MIN } from "@/data/keywords";
 import { mergeRecords, saveTodayRecord, useSavedRecords } from "@/lib/recordRepository";
-import type { DailyRecord, Mood } from "@/types/record";
+import type { DailyRecord } from "@/types/record";
+import { EMPTY_DRAFT, draftToRecordInput, isDraftReady, recordToDraft } from "./recordDraft";
 import type { RecordDraft } from "./TodayRecordForm";
 
 type Mode = "form" | "done";
 
 /** 저장 후 결과로 넘어가기 전 로딩 장면을 보여주는 최소 시간 */
 const SAVING_SCENE_MS = 1400;
-
-const EMPTY_DRAFT: RecordDraft = { keywords: [], customKeywords: [], mood: null, memo: "" };
 
 /**
  * 작성 중인 초안은 화면끼리 함께 쓴다.
@@ -54,20 +52,14 @@ export function useTodayRecord(initialRecords: DailyRecord[], today: string) {
   const [saving, setSaving] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
 
-  const ready =
-    draft.keywords.length >= KEYWORD_MIN &&
-    draft.keywords.length <= KEYWORD_MAX &&
-    draft.mood !== null;
+  const ready = isDraftReady(draft);
 
   const save = async () => {
-    if (!ready || saving || !draft.mood) return;
+    const input = draftToRecordInput(draft);
+    if (!ready || saving || !input) return;
     setSaving(true);
-    const memo = draft.memo.trim();
     await Promise.all([
-      saveTodayRecord(
-        { keywords: draft.keywords, mood: draft.mood as Mood, ...(memo ? { memo } : {}) },
-        today,
-      ),
+      saveTodayRecord(input, today),
       new Promise((resolve) => setTimeout(resolve, SAVING_SCENE_MS)),
     ]);
     setSaving(false);
@@ -77,14 +69,7 @@ export function useTodayRecord(initialRecords: DailyRecord[], today: string) {
   };
 
   const edit = () => {
-    if (todayRecord) {
-      setDraft({
-        keywords: todayRecord.keywords,
-        customKeywords: [],
-        mood: todayRecord.mood,
-        memo: todayRecord.memo ?? "",
-      });
-    }
+    if (todayRecord) setDraft(recordToDraft(todayRecord));
     setJustSaved(false);
     setMode("form");
   };

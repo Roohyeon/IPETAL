@@ -9,7 +9,7 @@ import { useSyncExternalStore, type CSSProperties } from "react";
  * 배경 위에 두 겹을 덧입힌다
  * - multiply: 물들이고 어둡게 (저녁 노을빛, 밤의 푸른 어둠)
  * - screen: 빛을 더한다 (아침 햇살, 저녁 금빛)
- * 연잎·연꽃(scene)은 밤에 조금 어둡게, 반딧불은 밤일수록 또렷하게.
+ * 반딧불은 밤일수록 또렷하게. (연잎·연꽃은 시간대와 상관없이 홈과 같은 색)
  */
 type RGB = [number, number, number];
 
@@ -18,8 +18,6 @@ type Grade = {
   multiplyOpacity: number;
   screen: RGB;
   screenOpacity: number;
-  /** 연잎·연꽃 밝기 (1 = 그대로) */
-  scene: number;
   /** 반딧불 세기 (0~1) */
   fireflies: number;
 };
@@ -29,7 +27,6 @@ const MORNING: Grade = {
   multiplyOpacity: 0.3,
   screen: [255, 244, 222],
   screenOpacity: 0.16,
-  scene: 1.02,
   fireflies: 0.5,
 };
 
@@ -38,7 +35,6 @@ const DAY: Grade = {
   multiplyOpacity: 0,
   screen: [255, 255, 255],
   screenOpacity: 0,
-  scene: 1,
   fireflies: 0.65,
 };
 
@@ -47,7 +43,6 @@ const EVENING: Grade = {
   multiplyOpacity: 0.42,
   screen: [255, 196, 120],
   screenOpacity: 0.2,
-  scene: 0.93,
   fireflies: 0.85,
 };
 
@@ -56,7 +51,6 @@ const NIGHT: Grade = {
   multiplyOpacity: 0.62,
   screen: [70, 92, 150],
   screenOpacity: 0.06,
-  scene: 0.72,
   fireflies: 1,
 };
 
@@ -95,7 +89,6 @@ function gradeAt(hour: number): Grade {
       multiplyOpacity: mix(g0.multiplyOpacity, g1.multiplyOpacity, t),
       screen: mixRgb(g0.screen, g1.screen, t),
       screenOpacity: mix(g0.screenOpacity, g1.screenOpacity, t),
-      scene: mix(g0.scene, g1.scene, t),
       fireflies: mix(g0.fireflies, g1.fireflies, t),
     };
   }
@@ -138,7 +131,6 @@ export function useTimeOfDayStyle(): CSSProperties {
     "--tod-multiply-opacity": grade.multiplyOpacity.toFixed(3),
     "--tod-screen": rgb(grade.screen),
     "--tod-screen-opacity": grade.screenOpacity.toFixed(3),
-    "--tod-scene": grade.scene.toFixed(3),
     "--tod-fireflies": grade.fireflies.toFixed(3),
   } as CSSProperties;
 }

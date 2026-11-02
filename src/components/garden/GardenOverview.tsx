@@ -14,7 +14,6 @@ import { useMediaQuery } from "@/lib/useMediaQuery";
 import { useOverscrollPull } from "@/lib/useOverscrollPull";
 import type { DailyRecord } from "@/types/record";
 import { CurrentMonthJump } from "./CurrentMonthJump";
-import { PondWater } from "./PondWater";
 import { useTimeOfDayStyle } from "./timeOfDay";
 import { GardenLotus } from "./GardenLotus";
 import { GardenPads } from "./GardenPads";
@@ -23,7 +22,11 @@ import layout from "./layout.module.css";
 import styles from "./GardenOverview.module.css";
 
 /** 모바일 배경 그림 */
-const POND_BACKDROP = "/images/garden-pond2-illustration.webp";
+const POND_BACKDROP = "/images/garden-stylized-pond.webp";
+/** 배경이 스크롤을 따라 움직이는 정도 (스크롤 1px당), 최대 이동(px), 끝에서 당길 때 따라오는 비율 */
+const BACKDROP_PARALLAX = 0.06;
+const BACKDROP_PARALLAX_MAX = 70;
+const BACKDROP_PULL = 0.5;
 
 /** 반딧불: 정원 위를 둥둥 떠다니는 작은 빛 (화면 기준 위치 %, 크기 px, 주기·지연 초) */
 const FIREFLIES = [
@@ -61,7 +64,6 @@ export function GardenOverview({ records: baseRecords, today }: GardenOverviewPr
     const petals = records.filter((record) => monthKeyOf(record.date) === key).length;
     return { key, month: index + 1, petals };
   });
-  const flowers = months.filter((month) => month.petals > 0).length;
   const currentKey = monthKeyOf(today);
   const currentRef = useRef<HTMLLIElement>(null);
   const reduce = useReducedMotion();
@@ -85,10 +87,38 @@ export function GardenOverview({ records: baseRecords, today }: GardenOverviewPr
   // 모바일: 페이지 끝에서 더 끌면 연잎들이 살짝 당겨진다
   const pull = useOverscrollPull(null, mobile && !reduce);
 
+  // 배경도 살짝: 스크롤하면 조금 느리게 위로 따라오고, 끝에서 당기면 함께 당겨진다
+  const backdropRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const backdrop = backdropRef.current;
+    if (!backdrop || !mobile || reduce) return;
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const parallax = Math.min(window.scrollY * BACKDROP_PARALLAX, BACKDROP_PARALLAX_MAX);
+      backdrop.style.setProperty(
+        "--bg-shift",
+        `${(-parallax + pull.get() * BACKDROP_PULL).toFixed(2)}px`,
+      );
+    };
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", schedule, { passive: true });
+    const unsubscribe = pull.on("change", schedule);
+    return () => {
+      window.removeEventListener("scroll", schedule);
+      unsubscribe();
+      if (frame) cancelAnimationFrame(frame);
+      backdrop.style.removeProperty("--bg-shift");
+    };
+  }, [mobile, reduce, pull]);
+
   return (
     <main className={layout.main} style={timeOfDay}>
-      {/* 모바일 배경: 연못 그림 (화면에 고정). 같은 그림을 한 겹 더 반대로 흘려 물결이 일렁인다 */}
-      <div className={styles.backdrop} aria-hidden="true">
+      {/* 모바일 배경: 연못 그림 (화면에 고정, 스크롤·당김에 살짝 따라 움직인다) */}
+      <div ref={backdropRef} className={styles.backdrop} aria-hidden="true">
         <Image
           src={POND_BACKDROP}
           alt=""
@@ -97,12 +127,12 @@ export function GardenOverview({ records: baseRecords, today }: GardenOverviewPr
           priority
           className={styles.backdropImage}
         />
-        <Image src={POND_BACKDROP} alt="" fill sizes="100vw" className={styles.backdropFlow} />
-        {/* 물결 일렁임 (WebGL). 준비되면 위 그림을 덮는다 */}
-        {use3d && !reduce ? <PondWater src={POND_BACKDROP} /> : null}
+        {/* 흰빛을 고르게 섞어 밝은 파스텔 톤으로 */}
+        <div className={styles.whiteWash} />
         {/* 시간대 분위기: 물들이는 겹 + 빛을 더하는 겹 */}
         <div className={styles.todMultiply} />
         <div className={styles.todScreen} />
+        <div className={styles.sunlight} />
         <div className={styles.fireflies}>
           {FIREFLIES.map((f, i) => (
             <span
@@ -128,9 +158,7 @@ export function GardenOverview({ records: baseRecords, today }: GardenOverviewPr
           <h1 id="garden-title" className={styles.title}>
             나의 정원
           </h1>
-          <p className={styles.summary}>
-            정원에 꽃 {flowers}송이 · 꽃잎 {records.length}장
-          </p>
+          <p className={styles.summary}>기록이 모여 연꽃을 이루는 정원이에요</p>
         </div>
 
         <motion.div
@@ -158,7 +186,11 @@ export function GardenOverview({ records: baseRecords, today }: GardenOverviewPr
                   >
                     <LilyPad className={styles.pad} />
                     {bloomed ? (
-                      <GardenLotus className={styles.lotus} bloomIn={mobile} />
+                      <GardenLotus
+                        className={styles.lotus}
+                        bloomIn={mobile}
+                        bobIndex={mobile ? month - 1 : undefined}
+                      />
                     ) : (
                       <span
                         className={styles.petal}

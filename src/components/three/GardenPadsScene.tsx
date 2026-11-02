@@ -4,6 +4,7 @@ import { useGLTF } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Suspense, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
+import { PAD_BOB_HEIGHT, padBob } from "@/components/garden/padBob";
 import { createDewMaterial, createPetalMaterial } from "./lotusMaterials";
 
 /** 기록 완료 히어로(PetalFallScene)와 같은 연잎·꽃잎 모델 */
@@ -23,6 +24,18 @@ const LEAF_TOP_Y = 0.0052;
 const PETAL_SCALE = 1.1;
 /** 꽃잎을 연잎 쪽으로 뒤로 눕히는 각도 (0이면 보는 사람을 향해 서 있음) */
 const PETAL_LEAN = THREE.MathUtils.degToRad(38);
+/**
+ * 수면 위 그림자·금빛·물결은 연잎보다 이만큼 아래(모델 단위)에 깐다.
+ * 연잎이 둥둥 오르내려도(±PAD_BOB_HEIGHT) 늘 연잎 아래라 잎 위로 넘치지 않는다.
+ * 낮춘 만큼 안쪽(z)으로 옮겨 화면에서 보이는 자리는 그대로 둔다.
+ */
+const WATER_Y = -0.012;
+const waterAt = (x: number, z: number): [number, number, number] => [
+  x,
+  WATER_Y,
+  z + WATER_Y / Math.tan(ELEVATION),
+];
+
 /** 이번 달 연잎 둘레 물결: 고리 수, 한 고리가 퍼졌다 사라지는 시간(초), 퍼지는 크기(연잎 반지름 배) */
 const RIPPLE_COUNT = 3;
 const RIPPLE_SECONDS = 3.6;
@@ -34,6 +47,7 @@ const FULL_SUN = { value: 1 };
 /** 연잎 색 (PetalFallScene과 같은 올리브 그린 + 파스텔) */
 const LEAF_COLOR = new THREE.Color("#8a9a5b");
 const LEAF_BASE_LUMA: Record<string, number> = { LeafTop: 0.4, LeafUnderside: 0.71 };
+/** 홈 기록 완료 화면(PetalFallScene) 연잎과 같은 색 */
 const LEAF_PASTEL = { saturation: 1.25, whiten: 0.24 };
 
 function recolorLeaf(material: THREE.MeshStandardMaterial, baseLuma: number) {
@@ -59,6 +73,67 @@ function recolorLeaf(material: THREE.MeshStandardMaterial, baseLuma: number) {
   return copy;
 }
 
+/**
+ * 이번 달 연잎 둘레로 잔잔히 퍼져 나가는 물결 고리.
+ * 수면(WATER_Y)에 깔려 연잎에 가려진다
+ */
+function Ripples() {
+  const rings = useRef<(THREE.Mesh | null)[]>([]);
+  const geometry = useMemo(() => new THREE.RingGeometry(0.96, 1, 72), []);
+  const materials = useMemo(
+    () =>
+      Array.from(
+        { length: RIPPLE_COUNT },
+        () =>
+          new THREE.MeshBasicMaterial({
+            color: "#ffffff",
+            transparent: true,
+            opacity: 0,
+            depthWrite: false,
+            side: THREE.DoubleSide,
+          }),
+      ),
+    [],
+  );
+
+  useEffect(
+    () => () => {
+      geometry.dispose();
+      materials.forEach((material) => material.dispose());
+    },
+    [geometry, materials],
+  );
+
+  useFrame(({ clock }) => {
+    rings.current.forEach((ring, i) => {
+      if (!ring) return;
+      const p = (((clock.elapsedTime / RIPPLE_SECONDS + i / RIPPLE_COUNT) % 1) + 1) % 1;
+      ring.scale.setScalar((LEAF_SIZE / 2) * THREE.MathUtils.lerp(RIPPLE_FROM, RIPPLE_TO, p));
+      // 나타나자마자 옅어지며 퍼진다
+      (ring.material as THREE.MeshBasicMaterial).opacity =
+        0.55 * Math.sin(Math.PI * Math.min(1, p * 1.4)) * (1 - p);
+    });
+  });
+
+  return (
+    <>
+      {materials.map((material, i) => (
+        <mesh
+          key={i}
+          ref={(mesh) => {
+            rings.current[i] = mesh;
+          }}
+          geometry={geometry}
+          material={material}
+          rotation={[-Math.PI / 2, 0, 0]}
+          position={waterAt(0, 0)}
+          renderOrder={-1}
+        />
+      ))}
+    </>
+  );
+}
+
 /** 한 달 칸: 연잎 중심(격자 기준 px), 연잎 지름(px), 꽃잎 기울기(도, 연꽃이 핀 달이면 null), 이번 달인지 */
 export type GardenSpot = {
   x: number;
@@ -68,24 +143,80 @@ export type GardenSpot = {
   current: boolean;
 };
 
-/** 이번 달 둘레의 은은한 금빛 (#ffd677): 가운데가 밝고 가장자리로 사라지는 원 */
-function createGlowTexture() {
+/**
+ * 물 위에 떠 있는 느낌
+ * - 그림자: 연잎 아래 수면에 흐릿하게, 햇살 반대편(오른쪽 아래)으로 살짝 비켜서
+ * - 둥둥: 연잎·꽃잎이 아주 미세하게 위아래로 (그림자는 수면에 그대로) — padBob.ts
+ */
+let waterTextures: { shadow: THREE.CanvasTexture } | null = null;
+
+function radialTexture(stops: [number, string][]) {
   const size = 128;
   const canvas = document.createElement("canvas");
   canvas.width = size;
   canvas.height = size;
   const ctx = canvas.getContext("2d")!;
   const gradient = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
-  // 가장자리로 갈수록 길게 사라져 경계가 보이지 않게
-  gradient.addColorStop(0, "rgba(255, 214, 119, 1)");
-  gradient.addColorStop(0.4, "rgba(255, 214, 119, 0.6)");
-  gradient.addColorStop(0.75, "rgba(255, 214, 119, 0.12)");
-  gradient.addColorStop(1, "rgba(255, 214, 119, 0)");
+  stops.forEach(([offset, color]) => gradient.addColorStop(offset, color));
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, size, size);
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   return texture;
+}
+
+/** 한 번만 만들어 모든 연잎이 함께 쓴다 */
+function getWaterTextures() {
+  waterTextures ??= {
+    shadow: radialTexture([
+      [0, "rgba(14, 58, 60, 0.95)"],
+      [0.62, "rgba(14, 58, 60, 0.75)"],
+      [0.82, "rgba(14, 58, 60, 0.3)"],
+      [1, "rgba(14, 58, 60, 0)"],
+    ]),
+  };
+  return waterTextures;
+}
+
+/**
+ * 연잎 아래 수면 그림자.
+ * 수면(WATER_Y)에 깔려 연잎에 가려진다 → 잎 위로 물이 넘쳐 보이지 않는다
+ */
+function WaterContact() {
+  const { shadow } = useMemo(() => getWaterTextures(), []);
+  return (
+    <>
+      <mesh
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={waterAt(LEAF_SIZE * 0.09, LEAF_SIZE * 0.16)}
+        renderOrder={-3}
+      >
+        <planeGeometry args={[LEAF_SIZE * 1.4, LEAF_SIZE * 1.4]} />
+        <meshBasicMaterial
+          map={shadow}
+          transparent
+          opacity={0.4}
+          depthWrite={false}
+          toneMapped={false}
+        />
+      </mesh>
+    </>
+  );
+}
+
+/**
+ * 이번 달 둘레의 은은한 금빛 (#ffd677).
+ * 연잎 아래(가운데)는 비워 두어 잎의 갈라진 틈으로 금빛 얼룩이 비치지 않게,
+ * 잎 가장자리(반지름 약 0.45) 바로 바깥에서 가장 밝고 바깥으로 길게 사라진다
+ */
+function createGlowTexture() {
+  return radialTexture([
+    [0, "rgba(255, 214, 119, 0)"],
+    [0.36, "rgba(255, 214, 119, 0)"],
+    [0.47, "rgba(255, 214, 119, 0.75)"],
+    [0.7, "rgba(255, 214, 119, 0.2)"],
+    [1, "rgba(255, 214, 119, 0)"],
+  ]);
 }
 
 /** 이번 달 연잎·연꽃 둘레가 은은하게 금빛으로 빛난다 (수면 위, 연잎 아래에서 천천히 숨 쉬듯) */
@@ -123,70 +254,12 @@ function Glow() {
       ref={ref}
       material={material}
       rotation={[-Math.PI / 2, 0, 0]}
-      position={[0, -0.003, 0]}
+      position={waterAt(0, 0)}
       renderOrder={-2}
     >
       {/* 연잎 지름의 약 2.2배 */}
       <planeGeometry args={[LEAF_SIZE * 2.2, LEAF_SIZE * 2.2]} />
     </mesh>
-  );
-}
-
-/** 이번 달 연잎 둘레로 잔잔히 퍼져 나가는 물결 고리 (수면 위, 연잎 아래) */
-function Ripples() {
-  const rings = useRef<(THREE.Mesh | null)[]>([]);
-  const geometry = useMemo(() => new THREE.RingGeometry(0.96, 1, 72), []);
-  const materials = useMemo(
-    () =>
-      Array.from(
-        { length: RIPPLE_COUNT },
-        () =>
-          new THREE.MeshBasicMaterial({
-            color: "#ffffff",
-            transparent: true,
-            opacity: 0,
-            depthWrite: false,
-            side: THREE.DoubleSide,
-          }),
-      ),
-    [],
-  );
-
-  useEffect(
-    () => () => {
-      geometry.dispose();
-      materials.forEach((material) => material.dispose());
-    },
-    [geometry, materials],
-  );
-
-  useFrame(({ clock }) => {
-    rings.current.forEach((ring, i) => {
-      if (!ring) return;
-      const p = (((clock.elapsedTime / RIPPLE_SECONDS + i / RIPPLE_COUNT) % 1) + 1) % 1;
-      const radius = (LEAF_SIZE / 2) * THREE.MathUtils.lerp(RIPPLE_FROM, RIPPLE_TO, p);
-      ring.scale.setScalar(radius);
-      // 나타나자마자 옅어지며 퍼진다
-      materials[i].opacity = 0.55 * Math.sin(Math.PI * Math.min(1, p * 1.4)) * (1 - p);
-    });
-  });
-
-  return (
-    <>
-      {materials.map((material, i) => (
-        <mesh
-          key={i}
-          ref={(mesh) => {
-            rings.current[i] = mesh;
-          }}
-          geometry={geometry}
-          material={material}
-          rotation={[-Math.PI / 2, 0, 0]}
-          position={[0, -0.002, 0]}
-          renderOrder={-1}
-        />
-      ))}
-    </>
   );
 }
 
@@ -264,31 +337,18 @@ function Spot({
   const { width, height } = useThree((state) => state.size);
   const leaf = useMemo(() => models.leaf.clone(true), [models.leaf]);
   const petal = useMemo(() => models.petal.model.clone(true), [models.petal.model]);
-  const leafRef = useRef<THREE.Group>(null);
-  const petalRef = useRef<THREE.Group>(null);
+  const bobRef = useRef<THREE.Group>(null);
 
   // 칸 위치(px) → 바닥면(y=0) 위의 점: 화면에서 아래로 갈수록 보는 사람 쪽(+z)
   const x = spot.x - width / 2;
   const z = (spot.y - height / 2) / SIN_E;
   const scale = spot.size / LEAF_SIZE;
   const petalLength = models.petal.length * PETAL_SCALE;
-  // 칸마다 흔들림이 겹치지 않게
-  const phase = index * 1.7;
 
-  useFrame(({ clock }) => {
-    const t = clock.elapsedTime + phase;
-    const g = leafRef.current;
-    if (g) {
-      // 물 위에 뜬 듯 아주 살짝
-      g.rotation.x = Math.sin(t * 0.8) * 0.02;
-      g.rotation.z = Math.cos(t * 0.7) * 0.015;
-    }
-    const p = petalRef.current;
-    if (p) {
-      // 꽃잎은 아래 끝을 축으로 살랑
-      p.rotation.z = Math.sin(t * 1.1) * 0.05;
-      p.position.y = Math.sin(t * 1.3) * 0.0015;
-    }
+  // 둥둥: 연잎·꽃잎이 함께 아주 미세하게 위아래로만 (연꽃과 같은 박자, 기울거나 출렁이지 않는다)
+  useFrame(() => {
+    const bob = bobRef.current;
+    if (bob) bob.position.y = padBob(index, performance.now() / 1000) * PAD_BOB_HEIGHT;
   });
 
   return (
@@ -299,14 +359,16 @@ function Spot({
           <Ripples />
         </>
       ) : null}
-      <group ref={leafRef}>
+      <WaterContact />
+      {/* 둥둥: 그림자는 수면에 두고 연잎·꽃잎만 */}
+      <group ref={bobRef}>
         <primitive object={leaf} />
-      </group>
-      {spot.petalTilt !== null ? (
-        <group position={[0, LEAF_TOP_Y + 0.002, 0]}>
-          {/* 화면 기준 축(x 오른쪽, y 위, z 보는 사람 쪽)에서 PETAL_LEAN만큼 연잎 쪽으로 뒤로 눕힌다 */}
-          <group rotation={[-ELEVATION - PETAL_LEAN, 0, THREE.MathUtils.degToRad(-spot.petalTilt)]}>
-            <group ref={petalRef}>
+        {spot.petalTilt !== null ? (
+          <group position={[0, LEAF_TOP_Y + 0.002, 0]}>
+            {/* 화면 기준 축(x 오른쪽, y 위, z 보는 사람 쪽)에서 PETAL_LEAN만큼 연잎 쪽으로 뒤로 눕힌다 */}
+            <group
+              rotation={[-ELEVATION - PETAL_LEAN, 0, THREE.MathUtils.degToRad(-spot.petalTilt)]}
+            >
               {/* 아래 끝이 연잎 가운데에 오도록 꽃잎 절반만큼 올린다 */}
               <group position={[0, petalLength / 2, 0.004]}>
                 <group rotation={[Math.PI / 2, 0, 0]} scale={PETAL_SCALE}>
@@ -315,8 +377,8 @@ function Spot({
               </group>
             </group>
           </group>
-        </group>
-      ) : null}
+        ) : null}
+      </group>
     </group>
   );
 }
@@ -359,6 +421,7 @@ export default function GardenPadsScene({ spots, active, onReady }: GardenPadsSc
       aria-hidden="true"
     >
       <CameraRig />
+      {/* 홈 기록 완료 화면과 같은 조명 (연잎이 탁해 보이지 않게) */}
       <hemisphereLight args={["#fffafa", "#dfeae2", 1.2]} />
       <directionalLight position={[0.4, 1, 0.6]} intensity={1.8} color="#fffaf3" />
       <directionalLight position={[-0.6, 0.5, 0.3]} intensity={0.6} color="#ffeceb" />

@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { hasWebGL, useClientValue } from "@/lib/useClientValue";
+import { LOTUS_BOB_PERCENT, padBob } from "./padBob";
 import styles from "./GardenLotus.module.css";
 
 // WebGL은 서버에 없으므로 클라이언트에서만 불러온다
@@ -18,8 +19,11 @@ const LotusScene = dynamic(() => import("@/components/three/LotusScene"), { ssr:
 export function GardenLotus({
   className,
   bloomIn = false,
+  bobIndex,
 }: {
   className?: string;
+  /** 몇 번째 칸인지: 아래 3D 연잎과 같은 계산(padBob)으로 매 프레임 같이 둥둥 */
+  bobIndex?: number;
   /** true면 처음 화면에 보일 때 봉오리에서 활짝 피어나는 연출 (움직임 줄이기면 처음부터 활짝) */
   bloomIn?: boolean;
 }) {
@@ -56,6 +60,23 @@ export function GardenLotus({
   }, [ready, inView, playBloom, bloom]);
 
   useEffect(() => () => bloomAnimation.current?.stop(), []);
+
+  // 3D 연잎과 같은 시계(performance.now)·같은 식으로 움직여 박자가 딱 맞는다 (움직임 줄이기면 멈춤)
+  useEffect(() => {
+    const node = ref.current;
+    if (!node || bobIndex === undefined || reduce) return;
+    let frame = 0;
+    const tick = () => {
+      const offset = -padBob(bobIndex, performance.now() / 1000) * LOTUS_BOB_PERCENT;
+      node.style.transform = `translateY(${offset.toFixed(3)}%)`;
+      frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(frame);
+      node.style.transform = "";
+    };
+  }, [bobIndex, reduce]);
 
   useEffect(() => {
     const node = ref.current;

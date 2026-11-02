@@ -3,7 +3,7 @@
 import { motion, useReducedMotion, type Variants } from "motion/react";
 import { useEffect, useRef } from "react";
 import { Button, ButtonLink } from "@/components/common/Button";
-import { ImageIcon, PencilIcon, TrashIcon } from "@/components/common/Icons";
+import { PencilIcon, TrashIcon } from "@/components/common/Icons";
 import doneStyles from "@/components/home/member/TodayDone.module.css";
 import { getRecommendations } from "@/data/recommendations";
 import { formatLongDate, formatTime, monthOf } from "@/lib/date";
@@ -84,11 +84,15 @@ export function DayRecordContent({
 
       <div ref={scrollRef} className={styles.scroll} data-day-record-scroll="">
         <motion.div style={{ y: pull }}>
-          {/* TODO: 사진 기록이 생기면 실제 사진으로 교체 */}
-          <div className={styles.photo}>
-            <ImageIcon size={30} />
-            <span>사진 영역</span>
-          </div>
+          {/* 사진은 남긴 날에만 (사진 없이 남겼으면 영역 자체가 없다) */}
+          {record.photo ? (
+            // eslint-disable-next-line @next/next/no-img-element -- 사용자가 남긴 사진(data URL)
+            <img
+              src={record.photo}
+              alt={`${formatLongDate(record.date)}의 사진`}
+              className={styles.photo}
+            />
+          ) : null}
 
           {record.memo ? <p className={styles.memo}>“{record.memo}”</p> : null}
 
